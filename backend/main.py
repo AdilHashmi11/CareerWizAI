@@ -12,6 +12,7 @@ import logging
 from typing import Optional, Dict, Any
 from contextlib import asynccontextmanager
 import traceback
+import re
 
 # Path configuration
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,15 +20,57 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
 sys.path.append(PROJECT_ROOT)
 
-# Enhanced logging configuration
+# Enhanced logging configuration with Unicode support
+class UnicodeFormatter(logging.Formatter):
+    """Custom formatter that handles Unicode characters safely."""
+    def format(self, record):
+        # Replace problematic Unicode characters with safe alternatives
+        if hasattr(record, 'msg') and isinstance(record.msg, str):
+            # Replace common emojis with text alternatives
+            emoji_replacements = {
+                '🚀': '[ROCKET]',
+                '✅': '[SUCCESS]', 
+                '❌': '[ERROR]',
+                '⚠️': '[WARNING]',
+                '💬': '[CHAT]',
+                '📊': '[STATS]',
+                '🔧': '[TOOL]',
+                '🧙': '[WIZARD]',
+                '📈': '[GROWTH]',
+                '💡': '[IDEA]',
+                '🎯': '[TARGET]',
+                '💻': '[TECH]',
+                '📚': '[EDUCATION]',
+                '🏆': '[ACHIEVEMENT]',
+                '🔍': '[SEARCH]',
+                '🎥': '[VIDEO]',
+                '💼': '[BUSINESS]',
+                '🛑': '[STOP]'
+            }
+            
+            msg = str(record.msg)
+            for emoji, replacement in emoji_replacements.items():
+                msg = msg.replace(emoji, replacement)
+            record.msg = msg
+            
+        return super().format(record)
+
+# Configure logging with Unicode-safe formatter
+unicode_formatter = UnicodeFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Setup handlers
+file_handler = logging.FileHandler('career_wiz.log', encoding='utf-8')
+console_handler = logging.StreamHandler(sys.stdout)
+
+file_handler.setFormatter(unicode_formatter)
+console_handler.setFormatter(unicode_formatter)
+
+# Configure root logger
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('career_wiz.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
+    handlers=[file_handler, console_handler]
 )
+
 logger = logging.getLogger(__name__)
 
 # Global application state
@@ -39,7 +82,7 @@ async def lifespan(app: FastAPI):
     global career_agent_instance
     
     # Startup
-    logger.info("🚀 Initializing CareerWiz application...")
+    logger.info("[ROCKET] Initializing CareerWiz application...")
     
     try:
         # Import and initialize the career agent
@@ -49,25 +92,25 @@ async def lifespan(app: FastAPI):
             raise RuntimeError("Career agent failed to initialize during import")
         
         career_agent_instance = career_agent
-        logger.info("✅ CareerWiz agent initialized successfully")
+        logger.info("[SUCCESS] CareerWiz agent initialized successfully")
         
         # Test the agent with a simple query
         test_result = career_agent_instance.process_query("test")
         if "error" in test_result:
-            logger.warning(f"⚠️ Agent test returned error: {test_result['error']}")
+            logger.warning(f"[WARNING] Agent test returned error: {test_result['error']}")
         else:
-            logger.info("✅ Agent test completed successfully")
+            logger.info("[SUCCESS] Agent test completed successfully")
         
         yield
         
     except Exception as e:
-        logger.error(f"❌ Critical startup failure: {str(e)}")
+        logger.error(f"[ERROR] Critical startup failure: {str(e)}")
         logger.error(traceback.format_exc())
         raise RuntimeError(f"Failed to initialize CareerWiz: {str(e)}")
     
     finally:
         # Shutdown
-        logger.info("🛑 Shutting down CareerWiz application...")
+        logger.info("[STOP] Shutting down CareerWiz application...")
 
 # FastAPI application setup
 app = FastAPI(
@@ -141,7 +184,7 @@ async def comprehensive_middleware(request: Request, call_next):
         endpoint_type = "chat" if request.url.path == "/chat" else "default"
         
         if not rate_limiter.is_allowed(client_ip, endpoint_type):
-            logger.warning(f"⚠️ Rate limit exceeded for {client_ip} on {endpoint_type}")
+            logger.warning(f"[WARNING] Rate limit exceeded for {client_ip} on {endpoint_type}")
             return JSONResponse(
                 status_code=429,
                 content={
@@ -157,7 +200,7 @@ async def comprehensive_middleware(request: Request, call_next):
         
         # Log request
         logger.info(
-            f"📊 {request.method} {request.url.path} - "
+            f"[STATS] {request.method} {request.url.path} - "
             f"{response.status_code} - {process_time:.3f}s - {client_ip}"
         )
         
@@ -165,7 +208,7 @@ async def comprehensive_middleware(request: Request, call_next):
         
     except Exception as e:
         process_time = time.time() - start_time
-        logger.error(f"💥 Middleware error: {request.url.path} - {str(e)} - {process_time:.3f}s")
+        logger.error(f"[ERROR] Middleware error: {request.url.path} - {str(e)} - {process_time:.3f}s")
         
         return JSONResponse(
             status_code=500,
@@ -207,12 +250,13 @@ class ChatRequest(BaseModel):
         return v
 
 class ChatResponse(BaseModel):
-    """Standardized chat response model."""
+    """Standardized chat response model with link tracking."""
     reply: Dict[str, Any]
     timestamp: str
     processing_time: float
     status: str
     agent_version: str = "2.1.0"
+    links_included: Optional[int] = None
 
 class HealthResponse(BaseModel):
     """Health check response model."""
@@ -231,6 +275,22 @@ def get_client_info(request: Request) -> Dict[str, str]:
         "timestamp": time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())
     }
 
+def count_links_in_response(response_text: str) -> int:
+    """Count the number of valid links in the response."""
+    if not response_text:
+        return 0
+    
+    # Find all markdown links (both bold and regular)
+    link_pattern = r'(?:\*\*)?\[([^\]]+)\]\(([^)]+)\)(?:\*\*)?'
+    links = re.findall(link_pattern, response_text)
+    
+    valid_links = 0
+    for title, url in links:
+        if url.startswith(('http://', 'https://')) and '.' in url and len(url) > 10:
+            valid_links += 1
+    
+    return valid_links
+
 # Frontend serving
 @app.get("/", response_class=FileResponse, tags=["Frontend"])
 async def serve_frontend():
@@ -238,7 +298,7 @@ async def serve_frontend():
     index_path = os.path.join(FRONTEND_DIR, "index.html")
     
     if not os.path.exists(index_path):
-        logger.error(f"❌ Frontend not found at: {index_path}")
+        logger.error(f"[ERROR] Frontend not found at: {index_path}")
         raise HTTPException(
             status_code=500,
             detail="Frontend application not found. Please ensure index.html exists in the frontend directory."
@@ -250,11 +310,11 @@ async def serve_frontend():
 try:
     if os.path.exists(FRONTEND_DIR):
         app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
-        logger.info(f"✅ Static files mounted from: {FRONTEND_DIR}")
+        logger.info(f"[SUCCESS] Static files mounted from: {FRONTEND_DIR}")
     else:
-        logger.warning(f"⚠️ Frontend directory not found: {FRONTEND_DIR}")
+        logger.warning(f"[WARNING] Frontend directory not found: {FRONTEND_DIR}")
 except Exception as e:
-    logger.error(f"❌ Failed to mount static files: {str(e)}")
+    logger.error(f"[ERROR] Failed to mount static files: {str(e)}")
 
 # Application startup time tracking
 app_start_time = time.time()
@@ -263,13 +323,13 @@ app_start_time = time.time()
 @app.post("/chat", response_model=ChatResponse, tags=["AI Chat"])
 async def chat_with_counselor(request: ChatRequest, http_request: Request):
     """
-    Enhanced chat endpoint with comprehensive error handling and response validation.
+    Enhanced chat endpoint with comprehensive error handling and link validation.
     """
     start_time = time.time()
     client_info = get_client_info(http_request)
     
     logger.info(
-        f"💬 Chat request from {client_info['ip']}: "
+        f"[CHAT] Chat request from {client_info['ip']}: "
         f"'{request.message[:100]}{'...' if len(request.message) > 100 else ''}' "
         f"(User: {request.username or 'Anonymous'})"
     )
@@ -277,7 +337,7 @@ async def chat_with_counselor(request: ChatRequest, http_request: Request):
     try:
         # Validate agent availability
         if career_agent_instance is None:
-            logger.error("❌ Career agent not available")
+            logger.error("[ERROR] Career agent not available")
             raise HTTPException(
                 status_code=503,
                 detail="Career counseling service is temporarily unavailable. Please try again later."
@@ -296,18 +356,23 @@ async def chat_with_counselor(request: ChatRequest, http_request: Request):
         # Determine response status
         status = "error" if "error" in agent_response else "success"
         
+        # Count links in the response
+        links_count = 0
+        if "full_response" in agent_response and agent_response["full_response"]:
+            links_count = count_links_in_response(agent_response["full_response"])
+        
         # Log the result
         if status == "error":
             logger.warning(
-                f"⚠️ Agent error for {client_info['ip']}: "
+                f"[WARNING] Agent error for {client_info['ip']}: "
                 f"{agent_response.get('error', 'Unknown error')}"
             )
         else:
             source = agent_response.get('source', 'AI Analysis')
             search_performed = agent_response.get('search_performed', False)
             logger.info(
-                f"✅ Chat response generated in {processing_time:.3f}s - "
-                f"Source: {source} - Search: {search_performed}"
+                f"[SUCCESS] Chat response generated in {processing_time:.3f}s - "
+                f"Source: {source} - Search: {search_performed} - Links: {links_count}"
             )
         
         # Return standardized response
@@ -315,7 +380,8 @@ async def chat_with_counselor(request: ChatRequest, http_request: Request):
             reply=agent_response,
             timestamp=timestamp,
             processing_time=round(processing_time, 3),
-            status=status
+            status=status,
+            links_included=links_count if links_count > 0 else None
         )
         
     except HTTPException:
@@ -328,7 +394,7 @@ async def chat_with_counselor(request: ChatRequest, http_request: Request):
         error_msg = f"Unexpected server error: {str(e)}"
         
         logger.error(
-            f"❌ Critical chat error for {client_info['ip']}: {error_msg}"
+            f"[ERROR] Critical chat error for {client_info['ip']}: {error_msg}"
         )
         logger.error(traceback.format_exc())
         
@@ -368,7 +434,7 @@ async def health_check():
                 agent_status = "degraded"
                 overall_status = "degraded"
     except Exception as e:
-        logger.warning(f"⚠️ Health check agent test failed: {str(e)}")
+        logger.warning(f"[WARNING] Health check agent test failed: {str(e)}")
         agent_status = "error"
         overall_status = "degraded"
     
@@ -392,7 +458,8 @@ async def detailed_status():
         "search_tool": "integrated",
         "frontend": "mounted" if os.path.exists(FRONTEND_DIR) else "not_found",
         "rate_limiter": "active",
-        "logging": "active"
+        "logging": "active",
+        "link_validation": "enabled"
     }
     
     # Environment check
@@ -410,7 +477,7 @@ async def detailed_status():
         "environment": env_status,
         "endpoints": {
             "chat": "/chat",
-            "health": "/health",
+            "health": "/health", 
             "status": "/api/status",
             "docs": "/docs",
             "frontend": "/"
@@ -420,7 +487,10 @@ async def detailed_status():
             "search_engine": "Serper API",
             "rate_limiting": "Active",
             "conversation_memory": "Enabled",
-            "error_recovery": "Enhanced"
+            "error_recovery": "Enhanced",
+            "link_validation": "Enabled",
+            "youtube_integration": "Enabled",
+            "global_locations": "Pakistan, USA, UK, Germany, China, Australia, Singapore"
         }
     }
 
@@ -437,7 +507,7 @@ async def reset_conversation(http_request: Request):
         
         career_agent_instance.reset_conversation()
         
-        logger.info(f"🔄 Conversation reset for {client_info['ip']}")
+        logger.info(f"[SUCCESS] Conversation reset for {client_info['ip']}")
         
         return {
             "success": True,
@@ -446,7 +516,7 @@ async def reset_conversation(http_request: Request):
         }
         
     except Exception as e:
-        logger.error(f"❌ Failed to reset conversation: {str(e)}")
+        logger.error(f"[ERROR] Failed to reset conversation: {str(e)}")
         return JSONResponse(
             status_code=500,
             content={
@@ -460,7 +530,7 @@ async def reset_conversation(http_request: Request):
 async def not_found_handler(request: Request, exc):
     """Enhanced 404 handler with logging."""
     client_ip = request.client.host
-    logger.warning(f"🔍 404 Not Found: {request.url.path} from {client_ip}")
+    logger.warning(f"[WARNING] 404 Not Found: {request.url.path} from {client_ip}")
     
     return JSONResponse(
         status_code=404,
@@ -477,7 +547,7 @@ async def internal_error_handler(request: Request, exc):
     client_ip = request.client.host
     error_details = str(exc)
     
-    logger.error(f"💥 500 Internal Server Error: {request.url.path} - {error_details}")
+    logger.error(f"[ERROR] 500 Internal Server Error: {request.url.path} - {error_details}")
     logger.error(traceback.format_exc())
     
     return JSONResponse(
@@ -492,7 +562,7 @@ async def internal_error_handler(request: Request, exc):
 @app.exception_handler(422)
 async def validation_error_handler(request: Request, exc):
     """Handle Pydantic validation errors."""
-    logger.warning(f"⚠️ Validation error: {request.url.path} - {str(exc)}")
+    logger.warning(f"[WARNING] Validation error: {request.url.path} - {str(exc)}")
     
     return JSONResponse(
         status_code=422,
@@ -507,10 +577,10 @@ async def validation_error_handler(request: Request, exc):
 if __name__ == "__main__":
     import uvicorn
     
-    logger.info("🧙 Starting CareerWiz in development mode...")
-    logger.info(f"📁 Frontend directory: {FRONTEND_DIR}")
-    logger.info(f"🔑 Environment: Google API configured: {bool(os.getenv('GOOGLE_API_KEY'))}")
-    logger.info(f"🔍 Search API configured: {bool(os.getenv('SERPER_API_KEY'))}")
+    logger.info("[WIZARD] Starting CareerWiz in development mode...")
+    logger.info(f"[BUSINESS] Frontend directory: {FRONTEND_DIR}")
+    logger.info(f"[SUCCESS] Environment: Google API configured: {bool(os.getenv('GOOGLE_API_KEY'))}")
+    logger.info(f"[SEARCH] Search API configured: {bool(os.getenv('SERPER_API_KEY'))}")
     
     uvicorn.run(
         "main:app",
@@ -521,5 +591,5 @@ if __name__ == "__main__":
         access_log=True
     )
 else:
-    logger.info("🧙 CareerWiz loaded for production deployment")
-    logger.info(f"📊 Application version: 2.1.0")
+    logger.info("[WIZARD] CareerWiz loaded for production deployment")
+    logger.info("[STATS] Application version: 2.1.0")
