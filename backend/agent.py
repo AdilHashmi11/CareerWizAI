@@ -1,5 +1,4 @@
 # backend/agent.py
-
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -19,6 +18,14 @@ logger = logging.getLogger(__name__)
 SYSTEM_PROMPT = """
 # IDENTITY AND CORE MISSION
 You are CareerWiz, a seasoned career strategist with 15+ years of experience across diverse industries. Your expertise spans career transitions, skill development, salary negotiations, and market intelligence. You engage in natural, flowing conversations that build upon previous interactions to provide increasingly personalized guidance.
+
+# CRITICAL LINK FORMATTING REQUIREMENTS
+- **ALWAYS include working URLs** when you receive search results
+- **Format ALL links as**: **[Source Title](actual_url)**
+- **Never create fake or placeholder links** - only use actual URLs from search results
+- **Include at least 3-5 relevant links** in each response when search results are available
+- **Mix different types of sources**: job sites, courses, YouTube videos, articles, etc.
+- **YouTube videos should be marked with 🎥** for easy identification
 
 # MEMORY AND CONTEXT AWARENESS
 - **Conversation Memory**: Actively reference and build upon the last 10+ messages to create seamless dialogue continuity
@@ -121,12 +128,22 @@ Use these emojis strategically to enhance communication effectiveness:
 - **Follow-ups**: Build directly on previous conversation without restating context
 - **Resource Sharing**: Integrate links naturally within explanatory text
 
+# LINK INTEGRATION EXAMPLES
+
+When you get search results, integrate them naturally like this:
+
+"For Python certification, I recommend starting with **[Python Institute PCAP Certification](https://pythoninstitute.org/pcap)** which is industry-recognized. You can also explore **[Python for Everybody Specialization on Coursera](https://coursera.org/specializations/python)** for comprehensive learning. 
+
+For practical tutorials, check out **[🎥 Python Tutorial for Beginners - Programming with Mosh](https://youtube.com/watch?v=_uQrJ0TkZlc)** which covers fundamentals excellently."
+
 # PROHIBITED BEHAVIORS
 - Never apologize for search limitations or technical constraints
 - Don't mention APIs, tools, or system processes
 - Avoid rigid section headers unless genuinely helpful for organization
 - No generic platitudes or filler content
 - Don't ask for information you could reasonably provide ranges for
+- **NEVER create placeholder links or fake URLs**
+- **NEVER ignore search results when available**
 
 # SPECIALIZED EXPERTISE AREAS
 - **Career Transitions**: Industry switching, role pivoting, skill bridging
@@ -138,13 +155,13 @@ Use these emojis strategically to enhance communication effectiveness:
 # EXAMPLE INTERACTION PATTERNS
 
 **For Skill Development Queries:**
-"Based on current market demand, here are three learning paths that align with your background... [specific recommendations with timelines and resources]"
+"Based on current market demand, here are three learning paths that align with your background... [specific recommendations with timelines and resources including actual links]"
 
 **For Career Change Questions:**  
-"Your experience in [previous role] actually translates well to [target field]. Here's how to position yourself... [tactical advice with real examples]"
+"Your experience in [previous role] actually translates well to [target field]. Here's how to position yourself... [tactical advice with real examples and relevant job board links]"
 
 **For Salary Inquiries:**
-"Let me pull the latest compensation data for your role and location... [current market rates with context and negotiation insights]"
+"Let me pull the latest compensation data for your role and location... [current market rates with context and negotiation insights, including links to salary research tools]"
 
 # SUCCESS METRICS
 Every response should:
@@ -153,8 +170,9 @@ Every response should:
 3. Include current market data when relevant
 4. Build naturally on previous conversation elements
 5. Feel like advice from a trusted career mentor
+6. **Include working links to relevant resources when search results are available**
 
-Remember: You're not just an information provider - you're a strategic career partner helping users navigate complex professional decisions with confidence and clarity.
+Remember: You're not just an information provider - you're a strategic career partner helping users navigate complex professional decisions with confidence and clarity. Always include real, working links to help users take immediate action on your recommendations.
 """
 
 def clean_response_text(text: str) -> str:
@@ -162,9 +180,9 @@ def clean_response_text(text: str) -> str:
     # Remove any XML-style tags that might slip through
     text = re.sub(r'<[^>]+>', '', text)
     
-    # Ensure proper markdown link formatting
-    # Convert any malformed links to proper format
-    text = re.sub(r'\[([^\]]+)\]\s*\(([^)]+)\)', r'**[\1](\2)**', text)
+    # Ensure proper markdown link formatting - keep the bold formatting
+    # Convert any malformed links to proper format with bold
+    text = re.sub(r'(?<!\*)\[([^\]]+)\]\(([^)]+)\)(?!\*)', r'**[\1](\2)**', text)
     
     # Remove any placeholder link patterns
     text = re.sub(r'\[RESOURCE_LINK[^\]]*\]', '', text)
@@ -177,21 +195,30 @@ def clean_response_text(text: str) -> str:
 
 def validate_links_in_response(text: str) -> str:
     """Validate that all links in the response are properly formatted."""
-    # Find all markdown links
-    link_pattern = r'\*\*\[([^\]]+)\]\(([^)]+)\)\*\*'
+    # Find all markdown links (both bold and regular)
+    link_pattern = r'(?:\*\*)?\[([^\]]+)\]\(([^)]+)\)(?:\*\*)?'
     links = re.findall(link_pattern, text)
     
     # Remove any links that don't have valid URLs
     def is_valid_url(url):
-        return url.startswith(('http://', 'https://')) and '.' in url
+        return url.startswith(('http://', 'https://')) and '.' in url and len(url) > 10
     
+    valid_links_count = 0
     for title, url in links:
         if not is_valid_url(url):
             # Remove the invalid link
-            invalid_link = f'**[{title}]({url})**'
-            text = text.replace(invalid_link, f'_{title}_')
-            logger.warning(f"Removed invalid link: {invalid_link}")
+            invalid_patterns = [
+                f'**[{title}]({url})**',
+                f'[{title}]({url})',
+            ]
+            for pattern in invalid_patterns:
+                if pattern in text:
+                    text = text.replace(pattern, f'_{title}_')
+                    logger.warning(f"Removed invalid link: {pattern}")
+        else:
+            valid_links_count += 1
     
+    logger.info(f"✅ Response contains {valid_links_count} valid links")
     return text
 
 class CareerCounselorAgent:
@@ -228,6 +255,18 @@ class CareerCounselorAgent:
             logger.error(f"❌ Failed to initialize CareerWiz agent: {str(e)}")
             raise RuntimeError(f"Agent initialization failed: {str(e)}")
 
+    def reset_conversation(self):
+        """Reset the conversation history."""
+        try:
+            self.chat = self.model.start_chat(
+                enable_automatic_function_calling=True,
+                history=[]
+            )
+            self.conversation_turns = 0
+            logger.info("🔄 Conversation history reset")
+        except Exception as e:
+            logger.error(f"❌ Failed to reset conversation: {str(e)}")
+
     def is_career_related(self, query: str) -> bool:
         """Determine if a query is career-related with expanded detection."""
         career_keywords = {
@@ -249,10 +288,10 @@ class CareerCounselorAgent:
         user_ref = f"{username}, " if username else ""
         
         if len(query.strip()) < 15:  # Very brief query
-            return f"Hi {user_ref}I'm here to help with your career journey! What specific career challenge or opportunity are you thinking about? Whether it's exploring new roles, developing skills, or planning your next move, I can provide targeted guidance based on current market insights."
+            return f"Hi {user_ref}I'm here to help with your career journey! 🚀 What specific career challenge or opportunity are you thinking about? Whether it's exploring new roles, developing skills, or planning your next move, I can provide targeted guidance based on current market insights."
         
         # Try to find a career angle in the query
-        return f"Hello {user_ref}I specialize in career strategy and professional development. While that's an interesting topic, I'd love to help you tackle a career-related challenge. Are you looking to advance in your current field, explore new opportunities, negotiate compensation, or develop new skills? Let's focus on accelerating your professional growth."
+        return f"Hello {user_ref}I specialize in career strategy and professional development. 💼 While that's an interesting topic, I'd love to help you tackle a career-related challenge. Are you looking to advance in your current field, explore new opportunities, negotiate compensation, or develop new skills? Let's focus on accelerating your professional growth! 📈"
 
     def manage_conversation_memory(self):
         """Manage conversation history to maintain context while preventing token overflow."""
@@ -280,6 +319,23 @@ class CareerCounselorAgent:
             except Exception as e:
                 logger.warning(f"Memory management warning: {str(e)}")
 
+    def enhance_response_with_links(self, response_text: str) -> str:
+        """Ensure response includes proper link formatting and validation."""
+        # Check if response already has properly formatted links
+        link_pattern = r'\*\*\[([^\]]+)\]\(([^)]+)\)\*\*'
+        existing_links = re.findall(link_pattern, response_text)
+        
+        if existing_links:
+            logger.info(f"🔗 Response contains {len(existing_links)} formatted links")
+            # Validate existing links
+            for title, url in existing_links:
+                if not url.startswith(('http://', 'https://')):
+                    logger.warning(f"⚠️ Invalid URL detected: {url}")
+        else:
+            logger.info("ℹ️ Response does not contain formatted links")
+        
+        return response_text
+
     def process_query(self, query: str, username: str = None) -> dict:
         """Process user query with enhanced conversational flow and memory management."""
         logger.info(f"💬 Processing conversational query from {username or 'anonymous'}: {query[:100]}...")
@@ -304,17 +360,18 @@ class CareerCounselorAgent:
             # For non-career queries, still try to provide some career-relevant angle
             if not self.is_career_related(query):
                 # Give it one chance to find a career connection
-                career_angle_query = f"How does this relate to career development: {query}"
+                career_angle_query = f"How does this relate to career development or professional growth: {query}. Provide career-relevant guidance with resources and links."
                 try:
                     response = self.chat.send_message(career_angle_query)
                     if response and response.text:
                         cleaned_response = clean_response_text(response.text.strip())
-                        final_response = validate_links_in_response(cleaned_response)
+                        enhanced_response = self.enhance_response_with_links(cleaned_response)
+                        final_response = validate_links_in_response(enhanced_response)
                         
                         return {
                             "full_response": final_response,
                             "source": "Career Strategy",
-                            "search_performed": False
+                            "search_performed": self.check_if_search_performed(response)
                         }
                 except:
                     # Fall back to conversational response
@@ -325,11 +382,13 @@ class CareerCounselorAgent:
                         "search_performed": False
                     }
             
-            # Prepare the query with conversational context
+            # Prepare the query with conversational context and search instruction
+            enhanced_query = f"{query}\n\nIMPORTANT: Please search for current information and include actual working links in your response formatted as **[Source Title](URL)**."
+            
             if username:
-                contextual_query = f"{username} asks: {query}"
+                contextual_query = f"{username} asks: {enhanced_query}"
             else:
-                contextual_query = query
+                contextual_query = enhanced_query
             
             # Send query to the model with conversation history
             response = self.chat.send_message(contextual_query)
@@ -343,18 +402,12 @@ class CareerCounselorAgent:
             # Clean and validate the response
             raw_text = response.text.strip()
             cleaned_response = clean_response_text(raw_text)
-            final_response = validate_links_in_response(cleaned_response)
+            enhanced_response = self.enhance_response_with_links(cleaned_response)
+            final_response = validate_links_in_response(enhanced_response)
             
             # Determine if search was performed by checking function calls
-            search_performed = False
-            source = "Career Expertise"
-            
-            if response.candidates and response.candidates[0].content.parts:
-                for part in response.candidates[0].content.parts:
-                    if hasattr(part, 'function_call') and part.function_call:
-                        search_performed = True
-                        source = "Market Intelligence + Career Strategy"
-                        break
+            search_performed = self.check_if_search_performed(response)
+            source = "Market Intelligence + Career Strategy" if search_performed else "Career Expertise"
             
             logger.info(f"✅ Conversational response generated successfully. Search: {search_performed}, Turn: {self.conversation_turns}")
             
@@ -381,30 +434,26 @@ class CareerCounselorAgent:
             return {
                 "error": "I encountered an unexpected issue. Please try again with a different career-related question."
             }
-    
-    def reset_conversation(self):
-        """Reset the conversation history while maintaining system instructions."""
-        try:
-            self.chat = self.model.start_chat(
-                enable_automatic_function_calling=True,
-                history=[]
-            )
-            self.conversation_turns = 0
-            logger.info("🔄 Conversational context reset successfully")
-        except Exception as e:
-            logger.error(f"❌ Failed to reset conversational context: {str(e)}")
 
-    def get_conversation_stats(self) -> dict:
-        """Get current conversation statistics for monitoring."""
-        return {
-            "conversation_turns": self.conversation_turns,
-            "history_length": len(self.chat.history) if self.chat.history else 0,
-            "memory_management_active": self.conversation_turns > self.max_history_turns
-        }
+    def check_if_search_performed(self, response) -> bool:
+        """Check if search was performed by analyzing the response."""
+        search_performed = False
+        
+        if response.candidates and response.candidates[0].content.parts:
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, 'function_call') and part.function_call:
+                    if part.function_call.name == 'search':
+                        search_performed = True
+                        logger.info("🔍 Search function was called")
+                        break
+        
+        return search_performed
 
-# Create the global agent instance
+
+# Create and export the career agent instance
 try:
     career_agent = CareerCounselorAgent()
+    logger.info("✅ Global career_agent instance created successfully")
 except Exception as e:
-    logger.error(f"❌ Failed to create global conversational career agent instance: {str(e)}")
+    logger.error(f"❌ Failed to create career_agent instance: {str(e)}")
     career_agent = None
