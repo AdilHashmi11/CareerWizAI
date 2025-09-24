@@ -1,5 +1,4 @@
 # backend/tools.py
-
 import os
 import json
 import requests
@@ -96,6 +95,10 @@ class SearchTool:
                         "source": "Knowledge Graph"
                     })
             
+            # Look for YouTube results specifically
+            youtube_results = self.extract_youtube_results(data)
+            results.extend(youtube_results)
+            
             logger.info(f"🟢 Serper: Found {len(results)} valid results for '{query}'")
             return results
             
@@ -109,6 +112,31 @@ class SearchTool:
             logger.error(f"🔴 Serper unexpected error: {str(e)}")
             return []
     
+    def extract_youtube_results(self, search_data: dict) -> List[Dict[str, Any]]:
+        """Extract YouTube video results from search data."""
+        youtube_results = []
+        
+        # Check for videos section in search results
+        if "videos" in search_data:
+            for video in search_data["videos"][:3]:  # Limit to top 3 videos
+                title = video.get("title", "").strip()
+                link = video.get("link", "").strip()
+                duration = video.get("duration", "")
+                
+                if title and link and "youtube.com" in link:
+                    description = f"YouTube Video"
+                    if duration:
+                        description += f" ({duration})"
+                    
+                    youtube_results.append({
+                        "title": f"🎥 {title}",
+                        "url": link,
+                        "description": description,
+                        "source": "YouTube"
+                    })
+        
+        return youtube_results
+    
     def prioritize_career_results(self, results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Enhanced result prioritization for career-focused content."""
         
@@ -119,7 +147,7 @@ class SearchTool:
             'freecodecamp.org', 'datacamp.com', 'udacity.com',
             'monster.com', 'careerbuilder.com', 'ziprecruiter.com',
             'stackoverflow.com', 'github.com', 'medium.com',
-            'harvard.edu', 'mit.edu', 'stanford.edu'
+            'harvard.edu', 'mit.edu', 'stanford.edu', 'youtube.com'
         ]
         
         # Regional job boards
@@ -147,6 +175,9 @@ class SearchTool:
             for domain in priority_domains:
                 if domain in url_lower:
                     score += 15
+                    # Extra boost for YouTube educational content
+                    if domain == 'youtube.com' and any(keyword in title_lower for keyword in ['tutorial', 'course', 'learn', 'training']):
+                        score += 10
                     break
             
             for domain in regional_domains:
@@ -180,22 +211,46 @@ class SearchTool:
         
         # Sort by score and return top results
         scored_results.sort(key=lambda x: x[0], reverse=True)
-        final_results = [result for score, result in scored_results[:8]]
+        final_results = [result for score, result in scored_results[:10]]  # Increased to 10
         
         logger.debug(f"📊 Prioritized {len(final_results)} career-relevant results")
         return final_results
     
+    def format_results_for_agent(self, results: List[Dict[str, Any]]) -> str:
+        """Format search results specifically for the AI agent to use in responses."""
+        if not results:
+            return "No relevant results found."
+        
+        formatted_output = []
+        formatted_output.append(f"SEARCH RESULTS ({len(results)} found):")
+        formatted_output.append("=" * 50)
+        
+        for i, result in enumerate(results, 1):
+            title = result.get('title', 'Untitled')
+            url = result.get('url', '')
+            description = result.get('description', 'No description available')
+            source = result.get('source', 'Web')
+            
+            # Format each result with clear structure
+            formatted_output.append(f"\n{i}. **{title}**")
+            formatted_output.append(f"   Source: {source}")
+            formatted_output.append(f"   URL: {url}")
+            formatted_output.append(f"   Description: {description}")
+        
+        formatted_output.append("\n" + "=" * 50)
+        formatted_output.append("IMPORTANT: When referencing these results in your response, format links as:")
+        formatted_output.append("**[Source Title](actual_url)**")
+        formatted_output.append("Always include the actual working URLs from the search results above.")
+        
+        return "\n".join(formatted_output)
+    
     def search(self, queries: List[str]) -> str:
         """
         Main search function for the Gemini tool interface.
-        Returns JSON string with search results.
+        Returns formatted string with search results for the agent to use.
         """
         if not queries:
-            return json.dumps({
-                "success": False,
-                "message": "No search queries provided",
-                "results": []
-            })
+            return "ERROR: No search queries provided"
         
         logger.info(f"🔍 Starting search with {len(queries)} queries: {queries[:3]}")
         
@@ -225,28 +280,14 @@ class SearchTool:
         # Prioritize career-relevant results
         final_results = self.prioritize_career_results(unique_results)
         
-        # Prepare response
+        # Format results for the agent
         if final_results:
-            response_data = {
-                "success": True,
-                "total_results": len(final_results),
-                "results": final_results,
-                "search_queries": queries[:3],
-                "searches_performed": successful_searches
-            }
+            formatted_results = self.format_results_for_agent(final_results)
             logger.info(f"✅ Search completed: {len(final_results)} results from {successful_searches} successful searches")
+            return formatted_results
         else:
-            response_data = {
-                "success": False,
-                "total_results": 0,
-                "results": [],
-                "search_queries": queries[:3],
-                "searches_performed": successful_searches,
-                "message": "No relevant career results found. Try different search terms."
-            }
             logger.warning(f"⚠️ No results found from {successful_searches} searches")
-        
-        return json.dumps(response_data, indent=2)
+            return "No relevant career results found. Try different search terms or check your internet connection."
 
 # Create search tool instance
 search_tool = SearchTool()
@@ -254,14 +295,14 @@ search_tool = SearchTool()
 # Gemini function declaration for the search tool
 search_function_declaration = genai.protos.FunctionDeclaration(
     name="search",
-    description="Search the web for current career information including jobs, courses, training, certifications, salary data, and industry trends. Use this tool for any career-related query to get up-to-date market information.",
+    description="Search the web for current career information including jobs, courses, training, certifications, salary data, industry trends, and YouTube tutorials. This tool provides up-to-date links and resources that you MUST include in your responses with proper formatting.",
     parameters=genai.protos.Schema(
         type=genai.protos.Type.OBJECT,
         properties={
             "queries": genai.protos.Schema(
                 type=genai.protos.Type.ARRAY,
                 items=genai.protos.Schema(type=genai.protos.Type.STRING),
-                description="List of search queries to find relevant career information. Include variations like 'software developer salary 2024', 'python certification courses', 'remote data science jobs'"
+                description="List of search queries to find relevant career information. Include variations like 'software developer salary 2024', 'python certification courses', 'remote data science jobs', 'career transition tutorials YouTube'"
             )
         },
         required=["queries"]
