@@ -641,7 +641,7 @@
         </div>
     </div>
 
-  <script>
+ <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- Agent System Prompt ---
         const SYSTEM_PROMPT = `You are CareerWiz, an expert AI career counselor. Your goal is to provide personalized, actionable career guidance. 
@@ -1075,6 +1075,7 @@
                 saveChats();
                 removeLoadingIndicator();
                 displayAgentMessage(replyData);
+                renderDashboard(); // Re-render dashboard after each chat response
         
             } catch (err) {
                 console.error('Chat API error:', err);
@@ -1092,11 +1093,12 @@
         function parseAgentResponse(text) {
             // --- NEW CODE ADDED HERE ---
             // This function now expects to receive the text from the `full_response` field
-            const resourceRegex = /\[RESOURCE:([^~]+)~([^\]]+)\]/g;
+            const resourceRegex = /\[(?:\s*🎥\s*)?([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
             const html = text.replace(resourceRegex, (match, title, url) => {
                 // The frontend no longer needs to manage the userProfile.resources array here.
                 // It just needs to format the links for display.
-                return `<a href="${url}" target="_blank" data-is-resource="true" data-resource-title="${title}" class="text-accent underline font-medium hover:opacity-80">${title}</a>`;
+                const icon = match.includes('🎥') ? '🎥' : '';
+                return `<a href="${url}" target="_blank" data-is-resource="true" data-resource-title="${title}" class="text-accent underline font-medium hover:opacity-80">${icon}${title}</a>`;
             });
             return marked.parse(html);
             // --- END NEW CODE ---
