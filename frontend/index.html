@@ -641,798 +641,808 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-             // --- Agent System Prompt ---
-            const SYSTEM_PROMPT = `You are CareerWiz, an expert AI career counselor. Your goal is to provide personalized, actionable career guidance. 
-            1.  **Assess User Profile**: Analyze the user's skills, interests, education, location, and career goals from their profile.
-            2.  **Identify Gaps**: Compare their profile to their stated career goals and identify any gaps in skills, education, or experience.
-            3.  **Analyze Market Trends**: Use your knowledge to provide insights into current job market trends, in-demand skills, and salary expectations relevant to the user's goal and location.
-            4.  **Develop a Plan**: Create a realistic, step-by-step development plan (e.g., a 30-day plan). This plan should be tailored to bridge the gaps you identified. Each step should have a clear title and a detailed description.
-            5.  **Recommend Resources**: Suggest specific, high-quality resources (articles, courses, universities) using the format [RESOURCE:Title~URL].
-            6.  **Response Structure**: When a user asks for a plan, your response must be a JSON object containing a "reply" object. This object must include:
-                - "text": A conversational response.
-                - "tasks": An array of objects, where each object represents a step in the plan and has "title" and "description" properties.
-            `;
+   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Agent System Prompt ---
+        const SYSTEM_PROMPT = `You are CareerWiz, an expert AI career counselor. Your goal is to provide personalized, actionable career guidance. 
+        1.  **Assess User Profile**: Analyze the user's skills, interests, education, location, and career goals from their profile.
+        2.  **Identify Gaps**: Compare their profile to their stated career goals and identify any gaps in skills, education, or experience.
+        3.  **Analyze Market Trends**: Use your knowledge to provide insights into current job market trends, in-demand skills, and salary expectations relevant to the user's goal and location.
+        4.  **Develop a Plan**: Create a realistic, step-by-step development plan (e.g., a 30-day plan). This plan should be tailored to bridge the gaps you identified. Each step should have a clear title and a detailed description.
+        5.  **Recommend Resources**: Suggest specific, high-quality resources (articles, courses, universities) using the format [RESOURCE:Title~URL].
+        6.  **Response Structure**: When a user asks for a plan, your response must be a JSON object containing a "reply" object. This object must include:
+            - "text": A conversational response.
+            - "tasks": An array of objects, where each object represents a step in the plan and has "title" and "description" properties.
+        `;
 
-            // --- Element Selections ---
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebar-overlay');
-            const menuBtn = document.getElementById('menu-btn');
-            const newChatBtn = document.getElementById('new-chat-btn');
-            const chatHistoryList = document.getElementById('chat-history-list');
-            const landingPage = document.getElementById('landing-page');
-            const chatApp = document.getElementById('chat-app');
-            const startChatBtn = document.getElementById('start-chat-btn');
-            const chatTextarea = document.getElementById('chat-textarea');
-            const chatLog = document.getElementById('chat-log');
-            const chatWindow = document.getElementById('chat-window');
-            const sendButton = document.getElementById('send-btn');
-            const deleteModal = document.getElementById('delete-modal');
-            const courseModal = document.getElementById('course-modal');
-            const aboutModal = document.getElementById('about-modal');
-            const nameModal = document.getElementById('name-modal');
-            const privacyModal = document.getElementById('privacy-modal');
-            const disclaimerModal = document.getElementById('disclaimer-modal');
-            const renameModal = document.getElementById('rename-modal');
-            const taskModal = document.getElementById('task-modal');
-            const deleteCancelBtn = document.getElementById('delete-cancel-btn');
-            const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
-            const modalCancelBtn = document.getElementById('modal-cancel-btn');
-            const modalProceedBtn = document.getElementById('modal-proceed-btn');
-            const aboutCloseBtn = document.getElementById('about-close-btn');
-            const taskCloseBtn = document.getElementById('task-close-btn');
-            const startChattingBtn = document.getElementById('start-chatting-btn');
-            const sidebarPinBtn = document.getElementById('sidebar-pin-btn');
-            const settingsBtn = document.getElementById('settings-btn');
-            const learnMoreBtn = document.getElementById('learn-more-btn');
-            const aboutBtnFooter = document.getElementById('about-btn-footer');
-            const privacyBtnFooter = document.getElementById('privacy-btn-footer');
-            const disclaimerBtnFooter = document.getElementById('disclaimer-btn-footer');
-            const privacyCloseBtn = document.getElementById('privacy-close-btn');
-            const disclaimerCloseBtn = document.getElementById('disclaimer-close-btn');
-            const nameInput = document.getElementById('name-input');
-            const renameInput = document.getElementById('rename-input');
-            const renameCancelBtn = document.getElementById('rename-cancel-btn');
-            const renameSaveBtn = document.getElementById('rename-save-btn');
-            const modalCourseTitle = document.getElementById('modal-course-title');
-            const modalCourseUrl = document.getElementById('modal-course-url');
-            const settingsMenu = document.getElementById('settings-menu');
-            const notification = document.getElementById('notification');
-            const taskModalTitle = document.getElementById('task-modal-title');
-            const taskModalBody = document.getElementById('task-modal-body');
+        // --- Element Selections ---
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const menuBtn = document.getElementById('menu-btn');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const chatHistoryList = document.getElementById('chat-history-list');
+        const landingPage = document.getElementById('landing-page');
+        const chatApp = document.getElementById('chat-app');
+        const startChatBtn = document.getElementById('start-chat-btn');
+        const chatTextarea = document.getElementById('chat-textarea');
+        const chatLog = document.getElementById('chat-log');
+        const chatWindow = document.getElementById('chat-window');
+        const sendButton = document.getElementById('send-btn');
+        const deleteModal = document.getElementById('delete-modal');
+        const courseModal = document.getElementById('course-modal');
+        const aboutModal = document.getElementById('about-modal');
+        const nameModal = document.getElementById('name-modal');
+        const privacyModal = document.getElementById('privacy-modal');
+        const disclaimerModal = document.getElementById('disclaimer-modal');
+        const renameModal = document.getElementById('rename-modal');
+        const taskModal = document.getElementById('task-modal');
+        const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+        const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalProceedBtn = document.getElementById('modal-proceed-btn');
+        const aboutCloseBtn = document.getElementById('about-close-btn');
+        const taskCloseBtn = document.getElementById('task-close-btn');
+        const startChattingBtn = document.getElementById('start-chatting-btn');
+        const sidebarPinBtn = document.getElementById('sidebar-pin-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const learnMoreBtn = document.getElementById('learn-more-btn');
+        const aboutBtnFooter = document.getElementById('about-btn-footer');
+        const privacyBtnFooter = document.getElementById('privacy-btn-footer');
+        const disclaimerBtnFooter = document.getElementById('disclaimer-btn-footer');
+        const privacyCloseBtn = document.getElementById('privacy-close-btn');
+        const disclaimerCloseBtn = document.getElementById('disclaimer-close-btn');
+        const nameInput = document.getElementById('name-input');
+        const renameInput = document.getElementById('rename-input');
+        const renameCancelBtn = document.getElementById('rename-cancel-btn');
+        const renameSaveBtn = document.getElementById('rename-save-btn');
+        const modalCourseTitle = document.getElementById('modal-course-title');
+        const modalCourseUrl = document.getElementById('modal-course-url');
+        const settingsMenu = document.getElementById('settings-menu');
+        const notification = document.getElementById('notification');
+        const taskModalTitle = document.getElementById('task-modal-title');
+        const taskModalBody = document.getElementById('task-modal-body');
 
-            // --- Dashboard/Chat View Elements ---
-            const dashboardTab = document.getElementById('dashboard-tab');
-            const dashboardPane = document.getElementById('dashboard-pane');
-            const chatArea = document.getElementById('chat-area');
-            const headerTitle = document.getElementById('header-title');
-            const editDashboardBtn = document.getElementById('edit-dashboard-btn');
-            const userInfoFields = document.querySelectorAll('.user-info-field');
-            const agentResourcesList = document.getElementById('agent-resources-list');
-            const taskGuidesList = document.getElementById('task-guides-list');
-            const statusIndicator = document.querySelector('.status-indicator');
+        // --- Dashboard/Chat View Elements ---
+        const dashboardTab = document.getElementById('dashboard-tab');
+        const dashboardPane = document.getElementById('dashboard-pane');
+        const chatArea = document.getElementById('chat-area');
+        const headerTitle = document.getElementById('header-title');
+        const editDashboardBtn = document.getElementById('edit-dashboard-btn');
+        const userInfoFields = document.querySelectorAll('.user-info-field');
+        const agentResourcesList = document.getElementById('agent-resources-list');
+        const taskGuidesList = document.getElementById('task-guides-list');
+        const statusIndicator = document.querySelector('.status-indicator');
 
-            // --- State Variables ---
-            let chats = [],
-                activeChatId = null,
-                chatToDeleteId = null,
-                chatToRenameId = null,
-                activeSidebarItem = null;
-            let userProfile = {};
-            const MAX_CHATS = 4;
-            let isSidebarPinned = localStorage.getItem('sidebarPinned') === 'true';
-            let isEditingProfile = false;
+        // --- State Variables ---
+        let chats = [],
+            activeChatId = null,
+            chatToDeleteId = null,
+            chatToRenameId = null,
+            activeSidebarItem = null;
+        let userProfile = {};
+        const MAX_CHATS = 4;
+        let isSidebarPinned = localStorage.getItem('sidebarPinned') === 'true';
+        let isEditingProfile = false;
 
-            const settingsMenuContent = `<button id="home-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span class="sidebar-text">Home</span></button><button id="about-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="sidebar-text">About</span></button><div class="h-px bg-border-color my-1"></div><p class="px-2 py-1 text-xs font-semibold text-text-light sidebar-text">THEMES</p><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="starlight">✨ Starlight</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="goldenrod">🍂 Goldenrod</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="cyberpunk">👾 Cyberpunk</button>`;
-            settingsMenu.innerHTML = settingsMenuContent;
+        const settingsMenuContent = `<button id="home-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span class="sidebar-text">Home</span></button><button id="about-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="sidebar-text">About</span></button><div class="h-px bg-border-color my-1"></div><p class="px-2 py-1 text-xs font-semibold text-text-light sidebar-text">THEMES</p><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="starlight">✨ Starlight</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="goldenrod">🍂 Goldenrod</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="cyberpunk">👾 Cyberpunk</button>`;
+        settingsMenu.innerHTML = settingsMenuContent;
 
-            // --- Dashboard Logic ---
-            function loadUserProfile() {
-                const savedProfile = localStorage.getItem('careerWizUserProfile');
-                userProfile = savedProfile ? JSON.parse(savedProfile) : {
-                    name: 'Not Set',
-                    goal: 'Not Set',
-                    education: 'Not Set',
-                    location: 'Not Set',
-                    skills: 'Not Set',
-                    tasks: [],
-                    resources: []
-                };
-                if (!userProfile.resources) userProfile.resources = [];
-                if (!userProfile.tasks) userProfile.tasks = [];
-            }
-
-            function saveUserProfile() {
-                localStorage.setItem('careerWizUserProfile', JSON.stringify(userProfile));
-            }
-
-            function renderDashboard() {
-                userInfoFields.forEach(field => {
-                    const key = field.dataset.key;
-                    if (userProfile[key]) {
-                        field.textContent = userProfile[key];
-                    }
-                });
-                renderAgentResources();
-                renderTasksAndGuides();
-            }
-
-            function renderAgentResources() {
-                agentResourcesList.innerHTML = '';
-                if (userProfile.resources.length === 0) {
-                    agentResourcesList.innerHTML = `<p class="text-text-light/70">Agent-provided resources like articles, courses, and links will appear here.</p>`;
-                } else {
-                    const list = document.createElement('ul');
-                    list.className = 'space-y-3 list-disc list-inside';
-                    userProfile.resources.forEach(res => {
-                        const item = document.createElement('li');
-                        item.innerHTML = `<a href="${res.url}" target="_blank" rel="noopener noreferrer" class="hover:underline text-text-light">${res.title}</a>`;
-                        list.appendChild(item);
-                    });
-                    agentResourcesList.appendChild(list);
-                }
-            }
-
-            function renderTasksAndGuides() {
-                taskGuidesList.innerHTML = '';
-                if (userProfile.tasks.length === 0) {
-                    taskGuidesList.innerHTML = `<p class="text-text-light/70">Agent-provided tasks and guides will appear here.</p>`;
-                } else {
-                    userProfile.tasks.forEach(task => {
-                        const button = document.createElement('button');
-                        button.className = 'w-full text-left p-3 rounded-lg bg-secondary hover:bg-border-color smooth-transition';
-                        button.textContent = task.title;
-                        button.onclick = () => {
-                            taskModalTitle.textContent = task.title;
-                            taskModalBody.innerHTML = marked.parse(task.description);
-                            openModal(taskModal, taskModal.querySelector('#task-modal-content'));
-                        };
-                        taskGuidesList.appendChild(button);
-                    });
-                }
-            }
-            
-            editDashboardBtn.addEventListener('click', () => {
-                isEditingProfile = !isEditingProfile;
-                editDashboardBtn.textContent = isEditingProfile ? 'Save Info' : 'Edit Info';
-
-                if (isEditingProfile) {
-                     userInfoFields.forEach(field => field.setAttribute('contenteditable', 'true'));
-                     userInfoFields[0].focus();
-                } else {
-                    userInfoFields.forEach(field => {
-                        field.setAttribute('contenteditable', 'false');
-                        userProfile[field.dataset.key] = field.textContent.trim();
-                    });
-                    saveUserProfile();
-                    showNotification('Profile saved!');
-                    renderDashboard();
-                }
-            });
-
-            // --- General UI Logic ---
-            function switchView(view) {
-                if (view === 'dashboard') {
-                    dashboardPane.classList.remove('hidden');
-                    chatArea.classList.add('hidden');
-                    headerTitle.textContent = 'Dashboard';
-                    editDashboardBtn.classList.remove('hidden');
-                    if(statusIndicator) statusIndicator.classList.add('hidden');
-                } else {
-                    dashboardPane.classList.add('hidden');
-                    chatArea.classList.remove('hidden');
-                    const activeChat = chats.find(c => c.id === activeChatId);
-                    headerTitle.textContent = activeChat ? activeChat.name : 'New Chat';
-                    editDashboardBtn.classList.add('hidden');
-                    if(statusIndicator) statusIndicator.classList.remove('hidden');
-                    renderActiveChatMessages();
-                    chatTextarea.focus();
-                }
-            }
-            
-            function setActiveSidebarItem(item) {
-                if(activeSidebarItem) {
-                    activeSidebarItem.classList.remove('bg-primary/20', 'text-accent');
-                }
-                item.classList.add('bg-primary/20', 'text-accent');
-                activeSidebarItem = item;
-            }
-
-            function openModal(modal, content) {
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    if(content) content.classList.remove('scale-95');
-                }, 10);
-            }
-
-            function closeModal(modal, content) {
-                modal.classList.add('opacity-0');
-                if(content) content.classList.add('scale-95');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
-
-            function applyTheme(theme) {
-                document.documentElement.className = theme;
-                localStorage.setItem('careerWizTheme', theme);
-            }
-
-            function showNotification(message, type = 'success') {
-                notification.textContent = message;
-                notification.className = `notification ${type} show`;
-                setTimeout(() => notification.classList.remove('show'), 3000);
-            }
-            
-            function closeSidebar() {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('hidden');
-            }
-
-            const applyPinState = () => {
-                 if (window.innerWidth >= 768) {
-                    if (isSidebarPinned) {
-                        sidebar.classList.add('is-expanded');
-                    } else {
-                        sidebar.classList.remove('is-expanded');
-                    }
-                } else {
-                     sidebar.classList.remove('is-expanded');
-                }
-                localStorage.setItem('sidebarPinned', isSidebarPinned);
+        // --- Dashboard Logic ---
+        function loadUserProfile() {
+            const savedProfile = localStorage.getItem('careerWizUserProfile');
+            userProfile = savedProfile ? JSON.parse(savedProfile) : {
+                name: 'Not Set',
+                goal: 'Not Set',
+                education: 'Not Set',
+                location: 'Not Set',
+                skills: 'Not Set',
+                tasks: [],
+                resources: []
             };
+            if (!userProfile.resources) userProfile.resources = [];
+            if (!userProfile.tasks) userProfile.tasks = [];
+        }
 
-            sidebarPinBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (window.innerWidth >= 768) {
-                    isSidebarPinned = !isSidebarPinned;
-                    applyPinState();
-                } else {
-                    closeSidebar();
+        function saveUserProfile() {
+            localStorage.setItem('careerWizUserProfile', JSON.stringify(userProfile));
+        }
+
+        function renderDashboard() {
+            userInfoFields.forEach(field => {
+                const key = field.dataset.key;
+                if (userProfile[key]) {
+                    field.textContent = userProfile[key];
                 }
             });
+            renderAgentResources();
+            renderTasksAndGuides();
+        }
 
-            menuBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sidebar.classList.remove('-translate-x-full');
-                sidebarOverlay.classList.remove('hidden');
-            });
-            
-            sidebarOverlay.addEventListener('click', closeSidebar);
-
-            function toggleSettingsMenu(menu) {
-                menu.classList.toggle('hidden');
-                setTimeout(() => {
-                    menu.classList.toggle('opacity-0');
-                    menu.classList.toggle('scale-95');
-                }, 10);
-            }
-            settingsBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (window.innerWidth >= 768 && !sidebar.classList.contains('is-expanded')) {
-                     sidebar.classList.add('is-expanded');
-                }
-                toggleSettingsMenu(settingsMenu);
-            });
-            document.addEventListener('click', (e) => {
-                if (!settingsMenu.classList.contains('hidden') && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) toggleSettingsMenu(settingsMenu);
-            });
-
-            // --- Chat Logic ---
-            function updateNewChatButtonState() {
-                const activeChat = chats.find(c => c.id === activeChatId);
-                const isCurrentChatEmpty = activeChat ? activeChat.history.length === 0 : false;
-                newChatBtn.disabled = chats.length >= MAX_CHATS || isCurrentChatEmpty;
-            }
-
-            function generateChatId() {
-                return `chat_${Date.now()}`;
-            }
-
-            function saveChats() {
-                localStorage.setItem('careerWizChats', JSON.stringify(chats));
-                localStorage.setItem('careerWizActiveChat', activeChatId);
-            }
-
-            function loadChats() {
-                const saved = localStorage.getItem('careerWizChats');
-                chats = (saved && JSON.parse(saved).length > 0) ? JSON.parse(saved) : [];
-                activeChatId = localStorage.getItem('careerWizActiveChat');
-                if (!chats.find(c => c.id === activeChatId)) activeChatId = chats.length > 0 ? chats[0].id : null;
-                if (chats.length === 0) createNewChat(false);
-            }
-
-            function createNewChat(save = true) {
-                if (chats.length >= MAX_CHATS) {
-                    showNotification('Chat limit reached.', 'error');
-                    return;
-                }
-                const newId = generateChatId();
-                let maxNum = chats.reduce((max, c) => {
-                    const match = c.name.match(/(\d+)/);
-                    return (match && parseInt(match[1]) > max) ? parseInt(match[1]) : max;
-                }, 0);
-                const newChat = {
-                     id: newId,
-                     name: `📝 Career ${maxNum + 1}`,
-                      history: []
-                            };
-                chats.push(newChat);
-                setActiveChat(newId, save);
-            }
-
-            function setActiveChat(id, save = true) {
-                activeChatId = id;
-                const chat = chats.find(c => c.id === id);
-                headerTitle.textContent = chat ? chat.name : "New Chat";
-                renderChatHistory();
-                renderActiveChatMessages();
-                if (save) saveChats();
-            }
-
-            function renderChatHistory() {
-                chatHistoryList.innerHTML = '';
-                chats.forEach(c => {
-                    const item = document.createElement('div');
-                    item.className = `sidebar-item chat-history-item relative group flex items-center p-3 rounded-lg smooth-transition cursor-pointer`;
-                    item.innerHTML = `<div class="flex-grow text-left truncate flex items-center space-x-3 pointer-events-none"><svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg><span class="sidebar-text">${c.name}</span></div><div class="chat-actions absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex items-center space-x-1"><button class="rename-btn p-1 rounded hover:bg-border-color text-text-light"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button><button class="delete-btn p-1 rounded hover:bg-red-500/20 text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
-                    
-                    if (c.id === activeChatId) {
-                        item.classList.add('bg-primary/20', 'text-accent');
-                    } else {
-                        item.classList.add('hover:bg-border-color/50');
-                    }
-
-                    item.addEventListener('click', (e) => {
-                      if(!e.target.closest('.chat-actions')) {
-                        switchView('chat');
-                        setActiveChat(c.id);
-                        setActiveSidebarItem(item);
-                        closeSidebar();
-                      }
-                    });
-
-                    item.querySelector('.rename-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        chatToRenameId = c.id;
-                        renameInput.value = c.name;
-                        openModal(renameModal, renameModal.querySelector('#rename-modal-content'));
-                        renameInput.focus();
-                    });
-
-                    item.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        chatToDeleteId = c.id;
-                        openModal(deleteModal, deleteModal.querySelector('#delete-modal-content'));
-                    });
-                    chatHistoryList.appendChild(item);
+        function renderAgentResources() {
+            agentResourcesList.innerHTML = '';
+            if (userProfile.resources.length === 0) {
+                agentResourcesList.innerHTML = `<p class="text-text-light/70">Agent-provided resources like articles, courses, and links will appear here.</p>`;
+            } else {
+                const list = document.createElement('ul');
+                list.className = 'space-y-3 list-disc list-inside';
+                userProfile.resources.forEach(res => {
+                    const item = document.createElement('li');
+                    item.innerHTML = `<a href="${res.url}" target="_blank" rel="noopener noreferrer" class="hover:underline text-text-light">${res.title}</a>`;
+                    list.appendChild(item);
                 });
+                agentResourcesList.appendChild(list);
+            }
+        }
+
+        function renderTasksAndGuides() {
+            taskGuidesList.innerHTML = '';
+            if (userProfile.tasks.length === 0) {
+                taskGuidesList.innerHTML = `<p class="text-text-light/70">Agent-provided tasks and guides will appear here.</p>`;
+            } else {
+                userProfile.tasks.forEach(task => {
+                    const button = document.createElement('button');
+                    button.className = 'w-full text-left p-3 rounded-lg bg-secondary hover:bg-border-color smooth-transition';
+                    button.textContent = task.title;
+                    button.onclick = () => {
+                        taskModalTitle.textContent = task.title;
+                        taskModalBody.innerHTML = marked.parse(task.description);
+                        openModal(taskModal, taskModal.querySelector('#task-modal-content'));
+                    };
+                    taskGuidesList.appendChild(button);
+                });
+            }
+        }
+        
+        editDashboardBtn.addEventListener('click', () => {
+            isEditingProfile = !isEditingProfile;
+            editDashboardBtn.textContent = isEditingProfile ? 'Save Info' : 'Edit Info';
+
+            if (isEditingProfile) {
+                 userInfoFields.forEach(field => field.setAttribute('contenteditable', 'true'));
+                 userInfoFields[0].focus();
+            } else {
+                userInfoFields.forEach(field => {
+                    field.setAttribute('contenteditable', 'false');
+                    userProfile[field.dataset.key] = field.textContent.trim();
+                });
+                saveUserProfile();
+                showNotification('Profile saved!');
+                renderDashboard();
+            }
+        });
+
+        // --- General UI Logic ---
+        function switchView(view) {
+            if (view === 'dashboard') {
+                dashboardPane.classList.remove('hidden');
+                chatArea.classList.add('hidden');
+                headerTitle.textContent = 'Dashboard';
+                editDashboardBtn.classList.remove('hidden');
+                if(statusIndicator) statusIndicator.classList.add('hidden');
+                renderDashboard(); // Re-render dashboard on switch
+            } else {
+                dashboardPane.classList.add('hidden');
+                chatArea.classList.remove('hidden');
+                const activeChat = chats.find(c => c.id === activeChatId);
+                headerTitle.textContent = activeChat ? activeChat.name : 'New Chat';
+                editDashboardBtn.classList.add('hidden');
+                if(statusIndicator) statusIndicator.classList.remove('hidden');
+                renderActiveChatMessages();
+                chatTextarea.focus();
+            }
+        }
+        
+        function setActiveSidebarItem(item) {
+            if(activeSidebarItem) {
+                activeSidebarItem.classList.remove('bg-primary/20', 'text-accent');
+            }
+            item.classList.add('bg-primary/20', 'text-accent');
+            activeSidebarItem = item;
+        }
+
+        function openModal(modal, content) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                if(content) content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal(modal, content) {
+            modal.classList.add('opacity-0');
+            if(content) content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.className = theme;
+            localStorage.setItem('careerWizTheme', theme);
+        }
+
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+        
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        }
+
+        const applyPinState = () => {
+             if (window.innerWidth >= 768) {
+                if (isSidebarPinned) {
+                    sidebar.classList.add('is-expanded');
+                } else {
+                    sidebar.classList.remove('is-expanded');
+                }
+            } else {
+                 sidebar.classList.remove('is-expanded');
+            }
+            localStorage.setItem('sidebarPinned', isSidebarPinned);
+        };
+
+        sidebarPinBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (window.innerWidth >= 768) {
+                isSidebarPinned = !isSidebarPinned;
+                applyPinState();
+            } else {
+                closeSidebar();
+            }
+        });
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+        });
+        
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        function toggleSettingsMenu(menu) {
+            menu.classList.toggle('hidden');
+            setTimeout(() => {
+                menu.classList.toggle('opacity-0');
+                menu.classList.toggle('scale-95');
+            }, 10);
+        }
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (window.innerWidth >= 768 && !sidebar.classList.contains('is-expanded')) {
+                 sidebar.classList.add('is-expanded');
+            }
+            toggleSettingsMenu(settingsMenu);
+        });
+        document.addEventListener('click', (e) => {
+            if (!settingsMenu.classList.contains('hidden') && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) toggleSettingsMenu(settingsMenu);
+        });
+
+        // --- Chat Logic ---
+        function updateNewChatButtonState() {
+            const activeChat = chats.find(c => c.id === activeChatId);
+            const isCurrentChatEmpty = activeChat ? activeChat.history.length === 0 : false;
+            newChatBtn.disabled = chats.length >= MAX_CHATS || isCurrentChatEmpty;
+        }
+
+        function generateChatId() {
+            return `chat_${Date.now()}`;
+        }
+
+        function saveChats() {
+            localStorage.setItem('careerWizChats', JSON.stringify(chats));
+            localStorage.setItem('careerWizActiveChat', activeChatId);
+        }
+
+        function loadChats() {
+            const saved = localStorage.getItem('careerWizChats');
+            chats = (saved && JSON.parse(saved).length > 0) ? JSON.parse(saved) : [];
+            activeChatId = localStorage.getItem('careerWizActiveChat');
+            if (!chats.find(c => c.id === activeChatId)) activeChatId = chats.length > 0 ? chats[0].id : null;
+            if (chats.length === 0) createNewChat(false);
+        }
+
+        function createNewChat(save = true) {
+            if (chats.length >= MAX_CHATS) {
+                showNotification('Chat limit reached.', 'error');
+                return;
+            }
+            const newId = generateChatId();
+            let maxNum = chats.reduce((max, c) => {
+                const match = c.name.match(/(\d+)/);
+                return (match && parseInt(match[1]) > max) ? parseInt(match[1]) : max;
+            }, 0);
+            const newChat = {
+                 id: newId,
+                 name: `📝 Career ${maxNum + 1}`,
+                  history: []
+                        };
+            chats.push(newChat);
+            setActiveChat(newId, save);
+        }
+
+        function setActiveChat(id, save = true) {
+            activeChatId = id;
+            const chat = chats.find(c => c.id === id);
+            headerTitle.textContent = chat ? chat.name : "New Chat";
+            renderChatHistory();
+            renderActiveChatMessages();
+            if (save) saveChats();
+        }
+
+        function renderChatHistory() {
+            chatHistoryList.innerHTML = '';
+            chats.forEach(c => {
+                const item = document.createElement('div');
+                item.className = `sidebar-item chat-history-item relative group flex items-center p-3 rounded-lg smooth-transition cursor-pointer`;
+                item.innerHTML = `<div class="flex-grow text-left truncate flex items-center space-x-3 pointer-events-none"><svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg><span class="sidebar-text">${c.name}</span></div><div class="chat-actions absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex items-center space-x-1"><button class="rename-btn p-1 rounded hover:bg-border-color text-text-light"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button><button class="delete-btn p-1 rounded hover:bg-red-500/20 text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
+                
+                if (c.id === activeChatId) {
+                    item.classList.add('bg-primary/20', 'text-accent');
+                } else {
+                    item.classList.add('hover:bg-border-color/50');
+                }
+
+                item.addEventListener('click', (e) => {
+                  if(!e.target.closest('.chat-actions')) {
+                    switchView('chat');
+                    setActiveChat(c.id);
+                    setActiveSidebarItem(item);
+                    closeSidebar();
+                  }
+                });
+
+                item.querySelector('.rename-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    chatToRenameId = c.id;
+                    renameInput.value = c.name;
+                    openModal(renameModal, renameModal.querySelector('#rename-modal-content'));
+                    renameInput.focus();
+                });
+
+                item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    chatToDeleteId = c.id;
+                    openModal(deleteModal, deleteModal.querySelector('#delete-modal-content'));
+                });
+                chatHistoryList.appendChild(item);
+            });
+            updateNewChatButtonState();
+        }
+
+        function renderActiveChatMessages() {
+            chatLog.innerHTML = '';
+            const chat = chats.find(c => c.id === activeChatId);
+            if (!chat) return;
+            if (chat.history.length === 0) displayInitialAgentMessage();
+            else chat.history.forEach(m => (m.role === 'user') ? displayUserMessage(m.text) : displayAgentMessage(m.data));
+            scrollToBottom();
+        }
+
+        function handleUserSubmit() {
+            const query = chatTextarea.value.trim();
+            if (query) {
+                triggerChat(query);
+                chatTextarea.value = '';
+                sendButton.disabled = true;
+                chatTextarea.style.height = 'auto';
+            }
+        }
+
+        async function triggerChat(query) {
+            const activeChat = chats.find(c => c.id === activeChatId);
+            if (!activeChat) return;
+        
+            activeChat.history.push({ role: 'user', text: query });
+            saveChats();
+            displayUserMessage(query);
+            showLoadingIndicator();
+            chatTextarea.disabled = true;
+            sendButton.disabled = true;
+        
+            if (activeChat.history.length === 1) {
                 updateNewChatButtonState();
             }
+        
+            try {
+                const username = userProfile.name || localStorage.getItem('careerWizUserName');
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: query, 
+                        username: username 
+                    })
+                });
+        
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+                const data = await response.json();
+                const replyData = data.reply || data;
 
-            function renderActiveChatMessages() {
-                chatLog.innerHTML = '';
-                const chat = chats.find(c => c.id === activeChatId);
-                if (!chat) return;
-                if (chat.history.length === 0) displayInitialAgentMessage();
-                else chat.history.forEach(m => (m.role === 'user') ? displayUserMessage(m.text) : displayAgentMessage(m.data));
-                scrollToBottom();
-            }
-
-            function handleUserSubmit() {
-                const query = chatTextarea.value.trim();
-                if (query) {
-                    triggerChat(query);
-                    chatTextarea.value = '';
-                    sendButton.disabled = true;
-                    chatTextarea.style.height = 'auto';
+                // --- NEW CODE ADDED HERE ---
+                if (replyData && replyData.tasks) {
+                    userProfile.tasks = replyData.tasks;
                 }
-            }
-
-            async function triggerChat(query) {
-                const activeChat = chats.find(c => c.id === activeChatId);
-                if (!activeChat) return;
-            
-                activeChat.history.push({ role: 'user', text: query });
+                if (replyData && replyData.resources) {
+                    userProfile.resources = replyData.resources;
+                }
+                saveUserProfile();
+                // --- END NEW CODE ---
+        
+                activeChat.history.push({ role: 'agent', data: replyData });
                 saveChats();
-                displayUserMessage(query);
-                showLoadingIndicator();
-                chatTextarea.disabled = true;
-                sendButton.disabled = true;
-            
-                if (activeChat.history.length === 1) {
-                    updateNewChatButtonState();
-                }
-            
-                try {
-                    const username = userProfile.name || localStorage.getItem('careerWizUserName');
-                    const response = await fetch('/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            message: query, 
-                            username: username 
-                        })
-                    });
-            
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-                    const data = await response.json();
-                    const replyData = data.reply || data;
-            
-                    activeChat.history.push({ role: 'agent', data: replyData });
-                    saveChats();
-                    removeLoadingIndicator();
-                    displayAgentMessage(replyData);
-            
-                } catch (err) {
-                    console.error('Chat API error:', err);
-                    removeLoadingIndicator();
-                    const errorMessage = { error: "Sorry, I'm having trouble connecting. Please check the backend server logs." };
-                    displayAgentMessage(errorMessage);
-                    showNotification('Failed to get response from server.', 'error');
-                } finally {
-                    chatTextarea.disabled = false;
-                    sendButton.disabled = chatTextarea.value.trim().length === 0;
-                    chatTextarea.focus();
-                }
+                removeLoadingIndicator();
+                displayAgentMessage(replyData);
+        
+            } catch (err) {
+                console.error('Chat API error:', err);
+                removeLoadingIndicator();
+                const errorMessage = { error: "Sorry, I'm having trouble connecting. Please check the backend server logs." };
+                displayAgentMessage(errorMessage);
+                showNotification('Failed to get response from server.', 'error');
+            } finally {
+                chatTextarea.disabled = false;
+                sendButton.disabled = chatTextarea.value.trim().length === 0;
+                chatTextarea.focus();
             }
-            
-            function parseAgentResponse(text) {
-                const html = text.replace(/\[RESOURCE:([^~]+)~([^\]]+)\]/g, (match, title, url) => {
-                    if (!userProfile.resources.some(r => r.url === url)) {
-                        userProfile.resources.push({ title, url });
-                        saveUserProfile();
-                        renderAgentResources();
-                    }
-                    return `<a href="${url}" target="_blank" data-is-resource="true" data-resource-title="${title}" class="text-accent underline font-medium hover:opacity-80">${title}</a>`;
-                });
-                return marked.parse(html);
-            }
-
-            function getTextForClipboard(html) {
-                const div = document.createElement('div');
-                div.innerHTML = html;
-                return div.textContent || div.innerText || "";
-            }
-
-            function displayAgentMessage(reply) {
-                if (reply && reply.error) {
-                    appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-red-500 font-bold text-lg">!</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><h4 class="font-bold text-red-500 mb-2">An Error Occurred</h4><p class="text-sm text-text-light font-mono bg-secondary p-2 rounded">${reply.error}</p></div></div>`);
-                    return;
-                }
-                const rawText = reply.summary || reply.text || reply.full_response || 'An error occurred.';
-                const html = parseAgentResponse(rawText);
-                appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><button class="copy-btn absolute top-2 right-2 p-1.5 rounded-full bg-border-color/50 hover:bg-border-color smooth-transition text-text-light" title="Copy text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><div class="agent-message-content">${html}</div></div></div>`);
-                const copyBtn = chatLog.lastChild.querySelector('.copy-btn');
-                if (copyBtn) copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(getTextForClipboard(html).trim()).then(() => {
-                        showNotification('Copied to clipboard!');
-                        copyBtn.innerHTML = '<svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-                        setTimeout(() => copyBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`, 2000);
-                    }).catch(err => showNotification('Failed to copy!', 'error'));
-                });
-            }
-
-            function displayInitialAgentMessage() {
-                const name = userProfile.name === 'Not Set' ? 'there' : userProfile.name;
-                const welcomeHTML = `<div class="flex items-start space-x-3">
-                    <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                        <span class="text-text-main font-bold text-sm">AI</span>
-                    </div>
-                    <div class="glass rounded-2xl p-5 max-w-2xl text-text-light">
-                        <h3 class="font-bold text-lg text-text-main mb-2">Welcome to CareerWiz, ${name}!</h3>
-                        <p class="mb-4 text-base">I can provide the best career guidance if you tell me a little about yourself.</p>
-                        <p class="text-base font-medium text-text-main mb-3">For the best results, please share your:</p>
-                        <ul class="space-y-2 text-base text-text-light/90">
-                            <li>📝 Educational background</li>
-                            <li>⭐ Professional interests and hobbies</li>
-                            <li>🚀 Your future goals</li>
-                        </ul>
-                    </div>
-                </div>`;
-                appendMessage(welcomeHTML);
-            }
-
-            function displayUserMessage(msg) {
-                appendMessage(`<div class="bg-primary rounded-2xl p-4 max-w-2xl text-white text-base">${msg.replace(/\n/g, '<br>')}</div>`, 'user');
-            }
-
-            function showLoadingIndicator() {
-                appendMessage(`<div id="loading" class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="glass rounded-2xl p-4 flex items-center space-x-2 text-text-light text-base"><span class="loading-dots inline-flex gap-1"><span></span><span></span><span></span></span></div></div>`, 'agent', 'loading');
-            }
-
-            function removeLoadingIndicator() {
-                const el = document.getElementById('loading');
-                if (el) el.remove();
-            }
-
-            function appendMessage(html, role = 'agent', id = null) {
-                const wrapper = document.createElement('div');
-                wrapper.className = `w-full flex message-bubble ${role === 'user' ? 'justify-end' : 'justify-start'}`;
-                if (id) wrapper.id = id;
-                wrapper.innerHTML = html;
-                chatLog.appendChild(wrapper);
-                scrollToBottom();
-            }
-
-            function scrollToBottom() {
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            }
-
-            window.openResourceModal = (title, url) => {
-                modalCourseTitle.textContent = title;
-                modalCourseUrl.textContent = url;
-                modalProceedBtn.href = url;
-                openModal(courseModal, courseModal.querySelector('#modal-content'));
-            };
-
-            // --- Event Listeners ---
-            dashboardTab.addEventListener('click', () => {
-                switchView('dashboard');
-                setActiveSidebarItem(dashboardTab);
-                closeSidebar();
+        }
+        
+        function parseAgentResponse(text) {
+            // --- UPDATED CODE: Capture resources from the backend's markdown format
+            const resourceRegex = /\[RESOURCE:([^~]+)~([^\]]+)\]/g;
+            const html = text.replace(resourceRegex, (match, title, url) => {
+                // This logic is now handled in the new code block above
+                return `<a href="${url}" target="_blank" data-is-resource="true" data-resource-title="${title}" class="text-accent underline font-medium hover:opacity-80">${title}</a>`;
             });
+            // --- END UPDATED CODE ---
+            return marked.parse(html);
+        }
 
-            newChatBtn.addEventListener('click', () => {
-                createNewChat();
-                const newChatTab = chatHistoryList.lastChild;
-                setActiveSidebarItem(newChatTab);
-                switchView('chat');
-                closeSidebar();
+        function getTextForClipboard(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.textContent || div.innerText || "";
+        }
+
+        function displayAgentMessage(reply) {
+            if (reply && reply.error) {
+                appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-red-500 font-bold text-lg">!</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><h4 class="font-bold text-red-500 mb-2">An Error Occurred</h4><p class="text-sm text-text-light font-mono bg-secondary p-2 rounded">${reply.error}</p></div></div>`);
+                return;
+            }
+            const rawText = reply.summary || reply.text || reply.full_response || 'An error occurred.';
+            const html = parseAgentResponse(rawText);
+            appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><button class="copy-btn absolute top-2 right-2 p-1.5 rounded-full bg-border-color/50 hover:bg-border-color smooth-transition text-text-light" title="Copy text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><div class="agent-message-content">${html}</div></div></div>`);
+            const copyBtn = chatLog.lastChild.querySelector('.copy-btn');
+            if (copyBtn) copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(getTextForClipboard(html).trim()).then(() => {
+                    showNotification('Copied to clipboard!');
+                    copyBtn.innerHTML = '<svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                    setTimeout(() => copyBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`, 2000);
+                }).catch(err => showNotification('Failed to copy!', 'error'));
             });
-            
-            startChatBtn.addEventListener('click', () => {
-                loadUserProfile(); 
-                if (!userProfile.name || userProfile.name === 'Not Set') {
-                    openModal(nameModal, nameModal.querySelector('#name-modal-content'));
-                    nameInput.focus();
-                } else {
-                    landingPage.classList.add('opacity-0');
+        }
+
+        function displayInitialAgentMessage() {
+            const name = userProfile.name === 'Not Set' ? 'there' : userProfile.name;
+            const welcomeHTML = `<div class="flex items-start space-x-3">
+                <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-text-main font-bold text-sm">AI</span>
+                </div>
+                <div class="glass rounded-2xl p-5 max-w-2xl text-text-light">
+                    <h3 class="font-bold text-lg text-text-main mb-2">Welcome to CareerWiz, ${name}!</h3>
+                    <p class="mb-4 text-base">I can provide the best career guidance if you tell me a little about yourself.</p>
+                    <p class="text-base font-medium text-text-main mb-3">For the best results, please share your:</p>
+                    <ul class="space-y-2 text-base text-text-light/90">
+                        <li>📝 Educational background</li>
+                        <li>⭐ Professional interests and hobbies</li>
+                        <li>🚀 Your future goals</li>
+                    </ul>
+                </div>
+            </div>`;
+            appendMessage(welcomeHTML);
+        }
+
+        function displayUserMessage(msg) {
+            appendMessage(`<div class="bg-primary rounded-2xl p-4 max-w-2xl text-white text-base">${msg.replace(/\n/g, '<br>')}</div>`, 'user');
+        }
+
+        function showLoadingIndicator() {
+            appendMessage(`<div id="loading" class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="glass rounded-2xl p-4 flex items-center space-x-2 text-text-light text-base"><span class="loading-dots inline-flex gap-1"><span></span><span></span><span></span></span></div></div>`, 'agent', 'loading');
+        }
+
+        function removeLoadingIndicator() {
+            const el = document.getElementById('loading');
+            if (el) el.remove();
+        }
+
+        function appendMessage(html, role = 'agent', id = null) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `w-full flex message-bubble ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+            if (id) wrapper.id = id;
+            wrapper.innerHTML = html;
+            chatLog.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        window.openResourceModal = (title, url) => {
+            modalCourseTitle.textContent = title;
+            modalCourseUrl.textContent = url;
+            modalProceedBtn.href = url;
+            openModal(courseModal, courseModal.querySelector('#modal-content'));
+        };
+
+        // --- Event Listeners ---
+        dashboardTab.addEventListener('click', () => {
+            switchView('dashboard');
+            setActiveSidebarItem(dashboardTab);
+            closeSidebar();
+        });
+
+        newChatBtn.addEventListener('click', () => {
+            createNewChat();
+            const newChatTab = chatHistoryList.lastChild;
+            setActiveSidebarItem(newChatTab);
+            switchView('chat');
+            closeSidebar();
+        });
+        
+        startChatBtn.addEventListener('click', () => {
+            loadUserProfile(); 
+            if (!userProfile.name || userProfile.name === 'Not Set') {
+                openModal(nameModal, nameModal.querySelector('#name-modal-content'));
+                nameInput.focus();
+            } else {
+                landingPage.classList.add('opacity-0');
+                setTimeout(() => {
+                    landingPage.classList.add('hidden');
+                    chatApp.classList.remove('hidden');
                     setTimeout(() => {
-                        landingPage.classList.add('hidden');
-                        chatApp.classList.remove('hidden');
-                        setTimeout(() => {
-                            chatApp.classList.remove('opacity-0');
-                            switchView('chat'); 
-                            if (!activeChatId) {
-                                createNewChat();
-                            }
-                            const activeChatTab = Array.from(chatHistoryList.children).find(child => 
-                                child.classList.contains('bg-primary/20'));
-                            if (!activeChatTab && chatHistoryList.firstChild) {
-                                setActiveSidebarItem(chatHistoryList.firstChild);
-                            }
-                            chatTextarea.focus();
-                        }, 50);
-                    }, 300);
-                }
-            });
-
-            learnMoreBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('how-the-magic-works-section').scrollIntoView({ behavior: 'smooth' });
-            });
-
-            nameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    startChattingBtn.click();
-                }
-            });
-            
-            nameInput.addEventListener('input', () => {
-                nameInput.classList.remove('ring-2', 'ring-red-500');
-            });
-
-            startChattingBtn.addEventListener('click', () => {
-                const name = nameInput.value.trim();
-                if (name) {
-                    userProfile.name = name;
-                    saveUserProfile();
-                    renderDashboard();
-                    closeModal(nameModal, nameModal.querySelector('#name-modal-content'));
-                    landingPage.classList.add('opacity-0');
-                    setTimeout(() => {
-                        landingPage.classList.add('hidden');
-                        chatApp.classList.remove('hidden');
-                        setTimeout(() => {
-                            chatApp.classList.remove('opacity-0');
-                            switchView('chat');
+                        chatApp.classList.remove('opacity-0');
+                        switchView('chat'); 
+                        if (!activeChatId) {
                             createNewChat();
-                            if (chatHistoryList.firstChild) {
-                                setActiveSidebarItem(chatHistoryList.firstChild);
-                            }
-                            chatTextarea.focus();
-                        }, 50);
-                    }, 300);
-                } else {
-                    nameInput.classList.add('ring-2', 'ring-red-500');
-                    setTimeout(() => nameInput.classList.remove('ring-2', 'ring-red-500'), 2000);
+                        }
+                        const activeChatTab = Array.from(chatHistoryList.children).find(child => 
+                            child.classList.contains('bg-primary/20'));
+                        if (!activeChatTab && chatHistoryList.firstChild) {
+                            setActiveSidebarItem(chatHistoryList.firstChild);
+                        }
+                        chatTextarea.focus();
+                    }, 50);
+                }, 300);
+            }
+        });
+
+        learnMoreBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('how-the-magic-works-section').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                startChattingBtn.click();
+            }
+        });
+        
+        nameInput.addEventListener('input', () => {
+            nameInput.classList.remove('ring-2', 'ring-red-500');
+        });
+
+        startChattingBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            if (name) {
+                userProfile.name = name;
+                saveUserProfile();
+                renderDashboard();
+                closeModal(nameModal, nameModal.querySelector('#name-modal-content'));
+                landingPage.classList.add('opacity-0');
+                setTimeout(() => {
+                    landingPage.classList.add('hidden');
+                    chatApp.classList.remove('hidden');
+                    setTimeout(() => {
+                        chatApp.classList.remove('opacity-0');
+                        switchView('chat');
+                        createNewChat();
+                        if (chatHistoryList.firstChild) {
+                            setActiveSidebarItem(chatHistoryList.firstChild);
+                        }
+                        chatTextarea.focus();
+                    }, 50);
+                }, 300);
+            } else {
+                nameInput.classList.add('ring-2', 'ring-red-500');
+                setTimeout(() => nameInput.classList.remove('ring-2', 'ring-red-500'), 2000);
+            }
+        });
+
+        aboutBtnFooter.addEventListener('click', () => openModal(aboutModal, aboutModal.querySelector('#about-modal-content')));
+        privacyBtnFooter.addEventListener('click', () => openModal(privacyModal, privacyModal.querySelector('#privacy-modal-content')));
+        disclaimerBtnFooter.addEventListener('click', () => openModal(disclaimerModal, disclaimerModal.querySelector('#disclaimer-modal-content')));
+        privacyCloseBtn.addEventListener('click', () => closeModal(privacyModal, privacyModal.querySelector('#privacy-modal-content')));
+        disclaimerCloseBtn.addEventListener('click', () => closeModal(disclaimerModal, disclaimerModal.querySelector('#disclaimer-modal-content')));
+        aboutCloseBtn.addEventListener('click', () => closeModal(aboutModal, aboutModal.querySelector('#about-modal-content')));
+        taskCloseBtn.addEventListener('click', () => closeModal(taskModal, taskModal.querySelector('#task-modal-content')));
+
+        deleteCancelBtn.addEventListener('click', () => closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content')));
+        modalCancelBtn.addEventListener('click', () => closeModal(courseModal, courseModal.querySelector('#modal-content')));
+        renameCancelBtn.addEventListener('click', () => closeModal(renameModal, renameModal.querySelector('#rename-modal-content')));
+
+        deleteConfirmBtn.addEventListener('click', () => {
+            if (chatToDeleteId) {
+                chats = chats.filter(c => c.id !== chatToDeleteId);
+                if (activeChatId === chatToDeleteId) activeChatId = null;
+                if (chats.length === 0) createNewChat();
+                else {
+                    if (!activeChatId) activeChatId = chats[0].id;
+                    setActiveChat(activeChatId);
                 }
-            });
+                saveChats();
+                renderChatHistory();
+            }
+            closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content'));
+        });
 
-            aboutBtnFooter.addEventListener('click', () => openModal(aboutModal, aboutModal.querySelector('#about-modal-content')));
-            privacyBtnFooter.addEventListener('click', () => openModal(privacyModal, privacyModal.querySelector('#privacy-modal-content')));
-            disclaimerBtnFooter.addEventListener('click', () => openModal(disclaimerModal, disclaimerModal.querySelector('#disclaimer-modal-content')));
-            privacyCloseBtn.addEventListener('click', () => closeModal(privacyModal, privacyModal.querySelector('#privacy-modal-content')));
-            disclaimerCloseBtn.addEventListener('click', () => closeModal(disclaimerModal, disclaimerModal.querySelector('#disclaimer-modal-content')));
-            aboutCloseBtn.addEventListener('click', () => closeModal(aboutModal, aboutModal.querySelector('#about-modal-content')));
-            taskCloseBtn.addEventListener('click', () => closeModal(taskModal, taskModal.querySelector('#task-modal-content')));
-
-            deleteCancelBtn.addEventListener('click', () => closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content')));
-            modalCancelBtn.addEventListener('click', () => closeModal(courseModal, courseModal.querySelector('#modal-content')));
-            renameCancelBtn.addEventListener('click', () => closeModal(renameModal, renameModal.querySelector('#rename-modal-content')));
-
-            deleteConfirmBtn.addEventListener('click', () => {
-                if (chatToDeleteId) {
-                    chats = chats.filter(c => c.id !== chatToDeleteId);
-                    if (activeChatId === chatToDeleteId) activeChatId = null;
-                    if (chats.length === 0) createNewChat();
-                    else {
-                        if (!activeChatId) activeChatId = chats[0].id;
-                        setActiveChat(activeChatId);
-                    }
+        renameSaveBtn.addEventListener('click', () => {
+            const newName = renameInput.value.trim();
+            if (newName && chatToRenameId) {
+                const chat = chats.find(c => c.id === chatToRenameId);
+                if (chat) {
+                    chat.name = newName;
                     saveChats();
                     renderChatHistory();
-                }
-                closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content'));
-            });
-
-            renameSaveBtn.addEventListener('click', () => {
-                const newName = renameInput.value.trim();
-                if (newName && chatToRenameId) {
-                    const chat = chats.find(c => c.id === chatToRenameId);
-                    if (chat) {
-                        chat.name = newName;
-                        saveChats();
-                        renderChatHistory();
-                        if (chat.id === activeChatId) {
-                            headerTitle.textContent = newName;
-                        }
+                    if (chat.id === activeChatId) {
+                        headerTitle.textContent = newName;
                     }
                 }
-                closeModal(renameModal, renameModal.querySelector('#rename-modal-content'));
-            });
-
-            modalProceedBtn.addEventListener('click', () => setTimeout(() => closeModal(courseModal, courseModal.querySelector('#modal-content')), 200));
-
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('#home-btn-menu')) {
-                    chatApp.classList.add('opacity-0');
-                    setTimeout(() => {
-                        chatApp.classList.add('hidden');
-                        landingPage.classList.remove('hidden');
-                        setTimeout(() => landingPage.classList.remove('opacity-0'), 50);
-                    }, 300);
-                }
-                if (e.target.closest('#about-btn-menu')) openModal(aboutModal, aboutModal.querySelector('#about-modal-content'));
-                if (e.target.closest('.theme-btn')) applyTheme(e.target.closest('.theme-btn').dataset.theme);
-            });
-
-            chatLog.addEventListener('click', (e) => {
-                const link = e.target.closest('a[data-is-resource="true"]');
-                if (link) {
-                    e.preventDefault();
-                    window.openResourceModal(link.dataset.resourceTitle, link.href);
-                }
-            });
-            sendButton.addEventListener('click', () => handleUserSubmit());
-            chatTextarea.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleUserSubmit();
-                }
-            });
-            chatTextarea.addEventListener('input', () => {
-                sendButton.disabled = chatTextarea.value.trim().length === 0;
-                chatTextarea.style.height = 'auto';
-                chatTextarea.style.height = `${chatTextarea.scrollHeight}px`;
-            });
-
-            // --- Animation Logic ---
-            let scene, camera, renderer, stars, starGeo;
-            const starVelocities = [];
-
-            function initAnimation() {
-                const canvas = document.getElementById('bg-animation-canvas');
-                if (!canvas) return;
-                scene = new THREE.Scene();
-                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-                camera.position.z = 1;
-                renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                starGeo = new THREE.BufferGeometry();
-                const starCount = 10000;
-                const positions = new Float32Array(starCount * 3);
-                const colors = new Float32Array(starCount * 3);
-                const sizes = new Float32Array(starCount);
-                const colorPalette = [new THREE.Color(0xffffff), new THREE.Color(0xffd2a1), new THREE.Color(0xa1cfff)];
-                for (let i = 0; i < starCount; i++) {
-                    const i3 = i * 3;
-                    positions[i3] = (Math.random() - 0.5) * 800;
-                    positions[i3 + 1] = (Math.random() - 0.5) * 800;
-                    positions[i3 + 2] = (Math.random() - 0.5) * 800;
-                    starVelocities.push((Math.random() * 0.12) + 0.03);
-                    sizes[i] = Math.random() * 1.8 + 0.7;
-                    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                    colors[i3] = color.r;
-                    colors[i3 + 1] = color.g;
-                    colors[i3 + 2] = color.b;
-                }
-                starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                starGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-                const starTexture = new THREE.Texture(generateStarTexture());
-                starTexture.needsUpdate = true;
-                let starMaterial = new THREE.PointsMaterial({
-                    map: starTexture,
-                    vertexColors: true,
-                    sizeAttenuation: true,
-                    transparent: true,
-                    blending: THREE.AdditiveBlending,
-                    depthWrite: false
-                });
-                stars = new THREE.Points(starGeo, starMaterial);
-                scene.add(stars);
-                window.addEventListener('resize', onWindowResize, false);
-                animate();
             }
-
-            function generateStarTexture() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 32;
-                canvas.height = 32;
-                const context = canvas.getContext('2d');
-                const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
-                gradient.addColorStop(0, 'rgba(255,255,255,1)');
-                gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-                gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
-                gradient.addColorStop(1, 'rgba(255,255,255,0)');
-                context.fillStyle = gradient;
-                context.fillRect(0, 0, 32, 32);
-                return canvas;
-            }
-
-            function onWindowResize() {
-                if (!camera || !renderer) return;
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                applyPinState(); // Re-apply pin state on resize
-            }
-
-            function animate() {
-                if (!stars) return;
-                const positions = starGeo.attributes.position.array;
-                for (let i = 0; i < positions.length / 3; i++) {
-                    const i3 = i * 3;
-                    positions[i3 + 2] += starVelocities[i];
-                    if (positions[i3 + 2] > 200) {
-                        positions[i3 + 2] = -200;
-                    }
-                }
-                starGeo.attributes.position.needsUpdate = true;
-                renderer.render(scene, camera);
-                requestAnimationFrame(animate);
-            }
-
-            // --- Initial page load ---
-            applyPinState();
-            applyTheme(localStorage.getItem('careerWizTheme') || 'starlight');
-            loadUserProfile();
-            renderDashboard();
-            loadChats();
-            renderChatHistory();
-            if (activeChatId) {
-                setActiveChat(activeChatId);
-                const activeTab = Array.from(chatHistoryList.children).find(c => c.dataset.chatId === activeChatId);
-                if (activeTab) setActiveSidebarItem(activeTab);
-                else if (chatHistoryList.firstChild) setActiveSidebarItem(chatHistoryList.firstChild);
-            }
-            initAnimation();
+            closeModal(renameModal, renameModal.querySelector('#rename-modal-content'));
         });
-    </script>
+
+        modalProceedBtn.addEventListener('click', () => setTimeout(() => closeModal(courseModal, courseModal.querySelector('#modal-content')), 200));
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#home-btn-menu')) {
+                chatApp.classList.add('opacity-0');
+                setTimeout(() => {
+                    chatApp.classList.add('hidden');
+                    landingPage.classList.remove('hidden');
+                    setTimeout(() => landingPage.classList.remove('opacity-0'), 50);
+                }, 300);
+            }
+            if (e.target.closest('#about-btn-menu')) openModal(aboutModal, aboutModal.querySelector('#about-modal-content'));
+            if (e.target.closest('.theme-btn')) applyTheme(e.target.closest('.theme-btn').dataset.theme);
+        });
+
+        chatLog.addEventListener('click', (e) => {
+            const link = e.target.closest('a[data-is-resource="true"]');
+            if (link) {
+                e.preventDefault();
+                window.openResourceModal(link.dataset.resourceTitle, link.href);
+            }
+        });
+        sendButton.addEventListener('click', () => handleUserSubmit());
+        chatTextarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleUserSubmit();
+            }
+        });
+        chatTextarea.addEventListener('input', () => {
+            sendButton.disabled = chatTextarea.value.trim().length === 0;
+            chatTextarea.style.height = 'auto';
+            chatTextarea.style.height = `${chatTextarea.scrollHeight}px`;
+        });
+
+        // --- Animation Logic ---
+        let scene, camera, renderer, stars, starGeo;
+        const starVelocities = [];
+
+        function initAnimation() {
+            const canvas = document.getElementById('bg-animation-canvas');
+            if (!canvas) return;
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 1;
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            starGeo = new THREE.BufferGeometry();
+            const starCount = 10000;
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+            const sizes = new Float32Array(starCount);
+            const colorPalette = [new THREE.Color(0xffffff), new THREE.Color(0xffd2a1), new THREE.Color(0xa1cfff)];
+            for (let i = 0; i < starCount; i++) {
+                const i3 = i * 3;
+                positions[i3] = (Math.random() - 0.5) * 800;
+                positions[i3 + 1] = (Math.random() - 0.5) * 800;
+                positions[i3 + 2] = (Math.random() - 0.5) * 800;
+                starVelocities.push((Math.random() * 0.12) + 0.03);
+                sizes[i] = Math.random() * 1.8 + 0.7;
+                const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                colors[i3] = color.r;
+                colors[i3 + 1] = color.g;
+                colors[i3 + 2] = color.b;
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            starGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            const starTexture = new THREE.Texture(generateStarTexture());
+            starTexture.needsUpdate = true;
+            let starMaterial = new THREE.PointsMaterial({
+                map: starTexture,
+                vertexColors: true,
+                sizeAttenuation: true,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            stars = new THREE.Points(starGeo, starMaterial);
+            scene.add(stars);
+            window.addEventListener('resize', onWindowResize, false);
+            animate();
+        }
+
+        function generateStarTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+            gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 32, 32);
+            return canvas;
+        }
+
+        function onWindowResize() {
+            if (!camera || !renderer) return;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            applyPinState(); // Re-apply pin state on resize
+        }
+
+        function animate() {
+            if (!stars) return;
+            const positions = starGeo.attributes.position.array;
+            for (let i = 0; i < positions.length / 3; i++) {
+                const i3 = i * 3;
+                positions[i3 + 2] += starVelocities[i];
+                if (positions[i3 + 2] > 200) {
+                    positions[i3 + 2] = -200;
+                }
+            }
+            starGeo.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        // --- Initial page load ---
+        applyPinState();
+        applyTheme(localStorage.getItem('careerWizTheme') || 'starlight');
+        loadUserProfile();
+        renderDashboard();
+        loadChats();
+        renderChatHistory();
+        if (activeChatId) {
+            setActiveChat(activeChatId);
+            const activeTab = Array.from(chatHistoryList.children).find(c => c.dataset.chatId === activeChatId);
+            if (activeTab) setActiveSidebarItem(activeTab);
+            else if (chatHistoryList.firstChild) setActiveSidebarItem(chatHistoryList.firstChild);
+        }
+        initAnimation();
+    });
+</script>
 </body>
 
 </html>
