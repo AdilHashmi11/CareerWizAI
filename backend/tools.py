@@ -7,6 +7,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import logging
 from urllib.parse import urlparse
+import httpx # Import for asynchronous requests
 
 # Load environment variables
 load_dotenv()
@@ -35,6 +36,17 @@ class SearchTool:
         except Exception:
             return False
     
+    async def async_check_links(self, urls: List[str]) -> List[str]:
+        """Asynchronously check a list of URLs and return only the ones that are live."""
+        live_urls = []
+        async with httpx.AsyncClient() as client:
+            tasks = [client.head(url, follow_redirects=True, timeout=5) for url in urls]
+            responses = await client.gather(*tasks, return_exceptions=True)
+            for url, response in zip(urls, responses):
+                if isinstance(response, httpx.Response) and response.status_code == 200:
+                    live_urls.append(url)
+        return live_urls
+
     def search_serper(self, query: str, num: int = 8) -> List[Dict[str, Any]]:
         """Enhanced Serper API search with better error handling."""
         if not self.serper_api_key:
@@ -244,7 +256,7 @@ class SearchTool:
         
         return "\n".join(formatted_output)
     
-    def search(self, queries: List[str]) -> str:
+    async def search(self, queries: List[str]) -> str:
         """
         Main search function for the Gemini tool interface.
         Returns formatted string with search results for the agent to use.
@@ -277,8 +289,14 @@ class SearchTool:
                 seen_urls.add(url)
                 unique_results.append(result)
         
+        # Check if links are live before prioritizing
+        live_urls = await self.async_check_links([res['url'] for res in unique_results])
+        
+        # Filter results to include only live links
+        live_results = [res for res in unique_results if res['url'] in live_urls]
+
         # Prioritize career-relevant results
-        final_results = self.prioritize_career_results(unique_results)
+        final_results = self.prioritize_career_results(live_results)
         
         # Format results for the agent
         if final_results:
