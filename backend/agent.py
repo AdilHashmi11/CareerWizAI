@@ -7,6 +7,7 @@ from google.api_core import exceptions
 import re
 import json
 import logging
+from typing import Optional, Dict, Any, List
 
 # Load environment variables
 load_dotenv()
@@ -24,7 +25,7 @@ You are CareerWiz, a seasoned career strategist with 15+ years of experience acr
 - **Format ALL links as**: **[Source Title](actual_url)**
 - **Never create fake or placeholder links** - only use actual URLs from search results
 - **Include at least 3-5 relevant links** in each response when search results are available
-- **Mix different types of sources**: job sites, courses, YouTube videos, articles, etc.
+- **Mix different types of sources**: job sites, courses, YouTube videos, etc.
 - **YouTube videos should be marked with 🎥** for easy identification
 
 # MEMORY AND CONTEXT AWARENESS
@@ -101,32 +102,6 @@ Use these emojis strategically to enhance communication effectiveness:
 - Choose emojis that directly relate to the career context being discussed
 - Place emojis strategically at the beginning of important points or sections
 - Never use emojis in place of words - they should enhance, not replace communication
-
-## Proactive Value Delivery
-- **Range-Based Recommendations**: Instead of asking "what's your skill level?", provide options for beginners through advanced professionals
-- **Multi-Path Guidance**: Present 2-3 viable approaches with clear trade-offs
-- **Immediate Actionability**: Include specific next steps the user can take today
-- **Resource Variety**: Offer mix of free and premium options, online and offline resources
-
-## Communication Style
-- **Confident Authority**: Speak as the expert you are - no apologetic language about limitations
-- **Practical Focus**: Balance strategic thinking with tactical execution
-- **Personal Touch**: Use "you" and "your" to maintain engagement
-- **Encouraging Realism**: Be honest about challenges while maintaining optimism about outcomes
-
-# RESPONSE QUALITY GUIDELINES
-
-## Content Standards
-- **Depth Over Breadth**: Better to cover fewer topics thoroughly than many topics superficially
-- **Market Relevance**: Ground all advice in current industry realities
-- **Personalized Insights**: Connect general advice to the user's specific situation
-- **Forward-Looking**: Consider industry evolution and future skill demands
-
-## Format Flexibility
-- **Short Queries**: 2-3 paragraphs with key insights and 1-2 actionable recommendations
-- **Complex Questions**: More detailed responses with clear structure but natural flow
-- **Follow-ups**: Build directly on previous conversation without restating context
-- **Resource Sharing**: Integrate links naturally within explanatory text
 
 # LINK INTEGRATION EXAMPLES
 
@@ -219,6 +194,43 @@ def validate_links_in_response(text: str) -> str:
     
     logger.info(f"✅ Response contains {valid_links_count} valid links")
     return text
+
+def parse_agent_response(text: str) -> Dict[str, Any]:
+    """
+    Parses the raw text output from the agent to extract resources and tasks.
+    """
+    resources = []
+    tasks = []
+    
+    # Regex to find links (resources)
+    link_pattern = re.compile(r'\[(?:\s*🎥\s*)?([^\]]+)\]\((https?://[^\s)]+)\)')
+    resource_matches = link_pattern.findall(text)
+    for title, url in resource_matches:
+        resources.append({"title": title.strip(), "url": url.strip()})
+    
+    # Regex to find numbered or bulleted tasks, ensuring newlines
+    # This pattern looks for a line starting with a number or bullet point
+    task_pattern = re.compile(r'^\s*(\d+\.|-|\*|\*\*)\s*(.*)', re.MULTILINE)
+    task_matches = task_pattern.findall(text)
+    for _, task_text in task_matches:
+        tasks.append({"title": task_text.strip(), "description": ""}) # Keeping description empty for now
+        
+    # Remove markdown links from the chat response text
+    chat_response_text = re.sub(link_pattern, r'**\1**', text)
+    
+    # Remove task list items from the chat response text to clean it up for display
+    chat_response_text_clean = re.sub(task_pattern, '', chat_response_text).strip()
+    
+    # If the cleaned text is empty, just keep the original text but without link markdown
+    if not chat_response_text_clean:
+        chat_response_text_clean = re.sub(link_pattern, r'**\1**', text)
+    
+    # The final JSON structure the frontend expects
+    return {
+        "full_response": chat_response_text_clean,
+        "resources": resources,
+        "tasks": tasks
+    }
 
 class CareerCounselorAgent:
     def __init__(self):
@@ -352,6 +364,8 @@ class CareerCounselorAgent:
                 conversational_response = self.generate_conversational_response(query, username)
                 return {
                     "full_response": conversational_response,
+                    "resources": [],
+                    "tasks": [],
                     "source": "Conversational AI",
                     "search_performed": False
                 }
@@ -365,10 +379,15 @@ class CareerCounselorAgent:
                     if response and response.text:
                         cleaned_response = clean_response_text(response.text.strip())
                         enhanced_response = self.enhance_response_with_links(cleaned_response)
-                        final_response = validate_links_in_response(enhanced_response)
+                        final_response_text = validate_links_in_response(enhanced_response)
+                        
+                        # Parse the final response to separate chat and dashboard content
+                        parsed_response = parse_agent_response(final_response_text)
                         
                         return {
-                            "full_response": final_response,
+                            "full_response": parsed_response["full_response"],
+                            "resources": parsed_response["resources"],
+                            "tasks": parsed_response["tasks"],
                             "source": "Career Strategy",
                             "search_performed": self.check_if_search_performed(response)
                         }
@@ -377,6 +396,8 @@ class CareerCounselorAgent:
                     conversational_response = self.generate_conversational_response(query, username)
                     return {
                         "full_response": conversational_response,
+                        "resources": [],
+                        "tasks": [],
                         "source": "Conversational AI", 
                         "search_performed": False
                     }
@@ -414,7 +435,10 @@ class CareerCounselorAgent:
             raw_text = "".join(text_parts).strip()
             cleaned_response = clean_response_text(raw_text)
             enhanced_response = self.enhance_response_with_links(cleaned_response)
-            final_response = validate_links_in_response(enhanced_response)
+            final_response_text = validate_links_in_response(enhanced_response)
+            
+            # Parse the final response to separate chat and dashboard content
+            parsed_response = parse_agent_response(final_response_text)
             
             # Determine if search was performed by checking function calls
             search_performed = self.check_if_search_performed(response)
@@ -423,7 +447,9 @@ class CareerCounselorAgent:
             logger.info(f"✅ Conversational response generated successfully. Search: {search_performed}, Turn: {self.conversation_turns}")
             
             return {
-                "full_response": final_response,
+                "full_response": parsed_response["full_response"],
+                "resources": parsed_response["resources"],
+                "tasks": parsed_response["tasks"],
                 "source": source,
                 "search_performed": search_performed
             }
