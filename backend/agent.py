@@ -127,16 +127,6 @@ For practical tutorials, check out **[🎥 Python Tutorial for Beginners - Progr
 - **Market Intelligence**: Industry trends, job market conditions, remote work insights
 - **Personal Branding**: Resume optimization, LinkedIn strategy, portfolio development
 
-# EXAMPLE INTERACTION PATTERNS
-
-**For Skill Development Queries:**
-"Based on current market demand, here are three learning paths that align with your background... [specific recommendations with timelines and resources including actual links]"
-
-**For Career Change Questions:** "Your experience in [previous role] actually translates well to [target field]. Here's how to position yourself... [tactical advice with real examples and relevant job board links]"
-
-**For Salary Inquiries:**
-"Let me pull the latest compensation data for your role and location... [current market rates with context and negotiation insights, including links to salary research tools]"
-
 # SUCCESS METRICS
 Every response should:
 1. Advance the user's career objectives meaningfully
@@ -147,6 +137,20 @@ Every response should:
 6. **Include working links to relevant resources when search results are available**
 
 Remember: You're not just an information provider - you're a strategic career partner helping users navigate complex professional decisions with confidence and clarity. Always include real, working links to help users take immediate action on your recommendations.
+
+# IMPORTANT - RESPONSE STRUCTURE
+When creating a task-based response, structure it as follows:
+- **Conversation**: Start with a natural, conversational greeting.
+- **Resources**: In the body of the text, embed links and resources conversationally.
+- **Tasks**: At the end of your conversational response, list your recommended tasks using a numbered or bulleted list. Each task should have a single, bolded title line followed by a paragraph of detailed description.
+
+Here is an example of the desired format for tasks:
+**Recommended Next Steps**
+1.  **Complete a Skills Gap Analysis**
+    Take an online assessment to identify your current skill level and pinpoint areas for improvement. This will provide a clear baseline for your learning plan.
+
+2.  **Explore Data Visualization Tools**
+    Familiarize yourself with tools like Tableau or Power BI. Many have free versions or student licenses available. Learning how to present data is a critical skill for business analysts.
 """
 
 def clean_response_text(text: str) -> str:
@@ -208,26 +212,28 @@ def parse_agent_response(text: str) -> Dict[str, Any]:
     for title, url in resource_matches:
         resources.append({"title": title.strip(), "url": url.strip()})
     
-    # Regex to find numbered or bulleted tasks, ensuring newlines
-    # This pattern looks for a line starting with a number or bullet point
-    task_pattern = re.compile(r'^\s*(\d+\.|-|\*|\*\*)\s*(.*)', re.MULTILINE)
+    # Regex to find numbered or bulleted tasks, allowing for multi-line descriptions
+    # This pattern looks for a bolded title line followed by text until the next bolded line or end of string
+    task_pattern = re.compile(r'^\s*\d+\.\s*\*\*(.*?)\*\*(.*?)(?=\n\s*\d+\.\s*\*\*|$)', re.MULTILINE | re.DOTALL)
     task_matches = task_pattern.findall(text)
-    for _, task_text in task_matches:
-        tasks.append({"title": task_text.strip(), "description": ""}) # Keeping description empty for now
-        
-    # Remove markdown links from the chat response text
-    chat_response_text = re.sub(link_pattern, r'**\1**', text)
     
-    # Remove task list items from the chat response text to clean it up for display
-    chat_response_text_clean = re.sub(task_pattern, '', chat_response_text).strip()
-    
-    # If the cleaned text is empty, just keep the original text but without link markdown
-    if not chat_response_text_clean:
-        chat_response_text_clean = re.sub(link_pattern, r'**\1**', text)
-    
+    if not task_matches:
+        # Fallback to a simpler regex if the bolded format is not found
+        task_pattern = re.compile(r'^\s*(\d+\.|-|\*)\s*(.*)', re.MULTILINE)
+        task_matches = task_pattern.findall(text)
+        for _, task_text in task_matches:
+            # We can't get a description without the bolded title format, so just use the whole line
+            tasks.append({"title": task_text.strip(), "description": ""})
+    else:
+        for title, description in task_matches:
+            tasks.append({
+                "title": title.strip(),
+                "description": description.strip()
+            })
+            
     # The final JSON structure the frontend expects
     return {
-        "full_response": chat_response_text_clean,
+        "full_response": text,
         "resources": resources,
         "tasks": tasks
     }
