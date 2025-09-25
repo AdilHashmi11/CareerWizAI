@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" class="starlight">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CareerWiz - AI Career Counselor</title>
-
+    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧙‍♂️</text></svg>">
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,19 +20,9 @@
             theme: {
                 extend: {
                     colors: {
-                        'primary': 'var(--primary)',
-                        'secondary': 'var(--secondary)',
-                        'accent': 'var(--accent)',
-                        'text-main': 'var(--text-main)',
-                        'text-light': 'var(--text-light)',
-                        'bg-main': 'var(--bg-main)',
-                        'bg-light': 'var(--bg-light)',
-                        'border-color': 'var(--border-color)',
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'slide-up': 'slideUp 0.5s ease-out',
+                        'primary': 'var(--primary)', 'secondary': 'var(--secondary)', 'accent': 'var(--accent)',
+                        'text-main': 'var(--text-main)', 'text-light': 'var(--text-light)',
+                        'bg-main': 'var(--bg-main)', 'bg-light': 'var(--bg-light)', 'border-color': 'var(--border-color)',
                     }
                 }
             }
@@ -41,551 +30,207 @@
     </script>
     <style>
         /* Theme Definitions */
-        .starlight {
-            --primary: #4e7ac7;
-            --secondary: #1a2231;
-            --accent: #6aa8e8;
-            --text-main: #e8f4ff;
-            --text-light: #90a0b8;
-            --bg-main: #0c1524;
-            --bg-light: #162438;
-            --border-color: #384e76;
-            --bg-light-rgb: 22, 36, 56;
-        }
+        .starlight { --primary: #4e7ac7; --secondary: #1a2231; --accent: #6aa8e8; --text-main: #e8f4ff; --text-light: #90a0b8; --bg-main: #0c1524; --bg-light: #162438; --border-color: #384e76; }
+        .goldenrod { --primary: #a8884c; --secondary: #262935; --accent: #cfa661; --text-main: #e2e8f0; --text-light: #94a3b8; --bg-main: #020617; --bg-light: #0f172a; --border-color: #1e293b; }
+        
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); }
+        .chat-scrollbar::-webkit-scrollbar { width: 4px; }
+        .chat-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .chat-scrollbar::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+        .smooth-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .message-bubble { animation: slideIn 0.4s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #chat-textarea:focus { outline: none; }
 
-        .goldenrod {
-            --primary: #a8884c;
-            --secondary: #262935;
-            --accent: #cfa661;
-            --text-main: #e2e8f0;
-            --text-light: #94a3b8;
-            --bg-main: #020617;
-            --bg-light: #0f172a;
-            --border-color: #1e293b;
-            --bg-light-rgb: 15, 23, 42;
-        }
+        .agent-message-content { font-weight: 400; line-height: 1.6; font-size: 15.5px; }
+        .agent-message-content strong { font-weight: 600; color: var(--text-main); }
+        .agent-message-content ul, .agent-message-content ol { padding-left: 20px; margin-top: 8px; margin-bottom: 8px; }
+        .agent-message-content li { margin-bottom: 4px; }
+        textarea { overflow-y: hidden; }
+        .response-heading { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .agent-message-content p { margin-bottom: 1rem; }
+        .agent-message-content p:last-child { margin-bottom: 0; }
+        .chat-history-item:hover .chat-actions { opacity: 1; }
 
-        .cyberpunk {
-            --primary: #00d9ff;
-            --secondary: #0a0a0a;
-            --accent: #ff0080;
-            --text-main: #00ffff;
-            --text-light: #80ffff;
-            --bg-main: #000510;
-            --bg-light: #0f0f23;
-            --border-color: #1a1a2e;
-            --bg-light-rgb: 15, 15, 35;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            overflow-x: hidden;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .chat-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-scrollbar::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, var(--primary), var(--accent));
-            border-radius: 3px;
-        }
-
-        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
-        }
-
-        .smooth-transition {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .message-bubble {
-            animation: slideIn 0.5s ease-out forwards;
-        }
-
-        .agent-message-content {
-            font-weight: 400;
-            line-height: 1.7;
-            font-size: 15.5px;
-        }
-
-        .agent-message-content strong {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .agent-message-content ul,
-        .agent-message-content ol {
-            padding-left: 20px;
-            margin-top: 8px;
-            margin-bottom: 8px;
-        }
-
-        .agent-message-content a {
-            color: var(--accent);
-            text-decoration: underline;
-            font-weight: 500;
-        }
-
-        #chat-textarea:focus {
-            outline: none;
-        }
-
-        textarea {
-            overflow-y: hidden;
-        }
-
-        .response-heading {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .agent-message-content p {
-            margin-bottom: 1rem;
-        }
-
-        .agent-message-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        .chat-history-item:hover .chat-actions {
-            opacity: 1;
-        }
-
-        .agent-message-content a:hover {
-            opacity: 0.8;
-        }
-
+        .agent-message-content a { color: var(--accent); text-decoration: underline; font-weight: 500; }
+        .agent-message-content a:hover { opacity: 0.8; }
+        
         @media (min-width: 768px) {
-            #sidebar {
-                width: 72px;
-                overflow: hidden;
-            }
-
-            #sidebar.is-expanded {
-                width: 280px;
-            }
-
-            #sidebar-content {
-                min-width: 280px;
-            }
-
-            .sidebar-text {
-                opacity: 0;
-                transition: opacity 0.1s;
-                white-space: nowrap;
-            }
-
-            #sidebar.is-expanded .sidebar-text {
-                opacity: 1;
-                transition: opacity 0.3s 0.2s;
-            }
-        }
-
-        #bg-animation-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            z-index: 0;
-        }
-
-        #landing-page header,
-        #landing-page main,
-        #landing-page footer {
-            position: relative;
-            z-index: 1;
-        }
-
-        .glass {
-            background: rgba(var(--bg-light-rgb, 15, 23, 42), 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid color-mix(in srgb, var(--text-main) 10%, transparent);
-        }
-
-        .btn-enhanced {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            transition: all 0.3s ease;
-        }
-
-        .btn-enhanced:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            transform: translateX(400px);
-            transition: transform 0.3s ease-out;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: rgba(34, 197, 94, 0.9);
-            color: white;
-        }
-
-        .notification.error {
-            background: rgba(239, 68, 68, 0.9);
-            color: white;
-        }
-
-        .feature-card {
-            background: linear-gradient(135deg, var(--bg-light), var(--bg-main));
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            transition: all 0.4s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border-color: var(--accent);
-        }
-
-        .status-indicator::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: pulse 2s infinite;
-        }
-
-        .text-gradient {
-            background-image: linear-gradient(120deg, var(--primary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            #sidebar { width: 72px; overflow: hidden; }
+            #sidebar.is-expanded { width: 256px; }
+            #sidebar-content { min-width: 256px; }
+            .sidebar-text { opacity: 0; transition: opacity 0.1s; white-space: nowrap; }
+            #sidebar.is-expanded .sidebar-text { opacity: 1; transition: opacity 0.2s 0.1s; }
         }
         
-        [contenteditable="true"] {
-            outline: 2px solid var(--primary);
-            border-radius: 4px;
-            padding: 2px 4px;
-            background-color: var(--secondary);
-        }
-
-        #dashboard-tab.bg-primary\/20 {
-             background-color: color-mix(in srgb, var(--accent) 30%, transparent);
-             color: var(--accent);
-        }
+        #bg-animation-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 0; }
+        #landing-page header, #landing-page main section { position: relative; z-index: 1; }
     </style>
 </head>
-
 <body class="bg-bg-main">
-
-    <div id="notification" class="notification"></div>
 
     <div id="landing-page" class="smooth-transition">
         <canvas id="bg-animation-canvas"></canvas>
         <header class="absolute top-0 left-0 right-0 z-10 p-4 md:p-6">
-            <nav class="container mx-auto flex justify-start items-center">
-                <div class="flex items-center animate-slide-up">
-                    <h1 class="text-2xl font-bold text-gradient">CareerWiz 🧙‍♂️</h1>
+            <nav class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-text-main">CareerWiz 🧙‍♂️</h1>
+                </div>
+                <div>
+                    <button id="about-btn-landing" class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 smooth-transition">
+                        <svg class="w-6 h-6 text-text-main" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </button>
                 </div>
             </nav>
         </header>
         <main>
             <section class="min-h-screen flex items-center justify-center text-center px-4">
-                <div class="z-10 max-w-5xl mx-auto -mt-20">
-                    <div class="animate-float">
-                        <h2 class="text-6xl md:text-8xl font-extrabold leading-tight mb-6 text-gradient animate-slide-up">Navigate Your Career Path with Confidence.</h2>
-                    </div>
-                    <p class="text-xl md:text-2xl max-w-3xl mx-auto text-text-light mb-12 font-light leading-relaxed animate-slide-up" style="animation-delay: 0.2s;">
-                        CareerWiz is your personal AI career counselor, ready to provide intelligent, personalized guidance for your professional journey.
-                    </p>
-                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 animate-slide-up" style="animation-delay: 0.4s;">
-                        <button id="start-chat-btn" class="btn-enhanced w-full sm:w-auto text-white font-semibold py-4 px-12 rounded-xl text-lg shadow-2xl">
-                            🚀 Talk to CareerWiz
-                        </button>
-                        <a href="#how-the-magic-works-section" class="glass inline-block w-full sm:w-auto px-12 py-4 text-lg font-semibold rounded-xl smooth-transition text-text-main hover:bg-white/20" id="learn-more-btn">
-                            Learn More ✨
-                        </a>
+                <div class="z-10 max-w-4xl mx-auto -mt-20">
+                    <h2 class="text-5xl md:text-7xl font-extrabold text-text-main leading-tight mb-6">Navigate Your Career Path with Confidence.</h2>
+                    <p class="text-xl md:text-2xl max-w-3xl mx-auto text-text-light mb-12 font-light">CareerWiz is your personal AI career counselor, ready to provide intelligent, personalized guidance for your professional journey.</p>
+                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button id="start-chat-btn" class="w-full sm:w-auto bg-primary hover:bg-accent text-white font-semibold py-4 px-10 rounded-xl text-lg smooth-transition transform hover:scale-105">🚀 Talk to CareerWiz</button>
+                        <a href="#how-the-magic-works-section" class="inline-block w-full sm:w-auto px-10 py-4 text-lg font-semibold rounded-xl smooth-transition text-text-main border border-text-main hover:bg-white/10 transform hover:scale-105" id="learn-more-btn">Learn More</a>
                     </div>
                 </div>
             </section>
 
-            <section id="how-the-magic-works-section" class="py-24 bg-bg-light">
+            <section id="how-the-magic-works-section" class="py-12 bg-bg-light">
                 <div class="container mx-auto px-6">
-                    <div class="text-center mb-20">
-                        <h3 class="text-5xl lg:text-6xl font-bold text-gradient">How the Magic Works</h3>
-                        <p class="text-xl lg:text-2xl text-text-light mt-4">A simple 3-step process delivers your career roadmap.</p>
+                    <div class="text-center mb-12">
+                        <h3 class="text-4xl font-bold text-text-main">How the Magic Works</h3>
+                        <p class="text-lg text-text-light mt-2">A simple, 3-step process delivers your career roadmap.</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                        <div class="feature-card p-10 rounded-2xl animate-slide-up" style="animation-delay: 0.1s;">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                        <div class="bg-bg-main p-8 rounded-xl border border-border-color transform hover:-translate-y-2 smooth-transition">
                             <div class="flex flex-col items-center">
-                                <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mb-6 animate-pulse-slow"><span class="text-3xl">✍️</span></div>
-                                <h4 class="text-2xl font-bold text-text-main mb-4">You Ask</h4>
-                                <p class="text-text-light leading-relaxed text-base">Provide details about your background and interests. The more context, the more personalized the advice.</p>
+                                <span class="text-4xl mb-4">✍️</span>
+                                <h4 class="text-xl font-bold text-text-main">You Ask</h4>
+                                <p class="text-text-light mt-2">Provide a few details about your background and interests. The more context you provide, the more personalized and effective the advice will be.</p>
                             </div>
                         </div>
-                        <div class="feature-card p-10 rounded-2xl animate-slide-up" style="animation-delay: 0.2s;">
+                        <div class="bg-bg-main p-8 rounded-xl border border-border-color transform hover:-translate-y-2 smooth-transition">
                             <div class="flex flex-col items-center">
-                                <div class="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center mb-6 animate-pulse-slow"><span class="text-3xl">🧙‍♂️</span></div>
-                                <h4 class="text-2xl font-bold text-text-main mb-4">CareerWiz Thinks</h4>
-                                <p class="text-text-light leading-relaxed text-base">Our AI analyzes your query, researches current trends, and synthesizes information into an actionable plan.</p>
+                                <span class="text-4xl mb-4">🧙‍♂️</span>
+                                <h4 class="text-xl font-bold text-text-main">CareerWiz Thinks</h4>
+                                <p class="text-text-light mt-2">Our AI agent takes your query and breaks it down to understand your specific needs. It then researches and synthesizes the most relevant, up-to-date information on the web. The results are analyzed and structured into a personalized, actionable plan just for you.</p>
                             </div>
                         </div>
-                        <div class="feature-card p-10 rounded-2xl animate-slide-up" style="animation-delay: 0.3s;">
+                        <div class="bg-bg-main p-8 rounded-xl border border-border-color transform hover:-translate-y-2 smooth-transition">
                             <div class="flex flex-col items-center">
-                                <div class="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mb-6 animate-pulse-slow"><span class="text-3xl">🗺️</span></div>
-                                <h4 class="text-2xl font-bold text-text-main mb-4">Your Path Forward</h4>
-                                <p class="text-text-light leading-relaxed text-base">Receive a clear, personalized roadmap with milestones, skills, and learning resources.</p>
+                                <span class="text-4xl mb-4">🗺️</span>
+                                <h4 class="text-xl font-bold text-text-main">Your Path Forward</h4>
+                                <p class="text-text-light mt-2">You receive a clear, personalized roadmap complete with key milestones, required skills, and external learning resources to guide your professional journey.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="features-section" class="py-24 bg-bg-main">
+            <section class="py-12 bg-bg-light">
                 <div class="container mx-auto px-6">
-                    <div class="text-center mb-20">
-                        <h3 class="text-5xl lg:text-6xl font-bold text-gradient">How CareerWiz Can Help You</h3>
-                        <p class="text-xl lg:text-2xl text-text-light mt-4">Get instant, actionable insights for your career questions.</p>
+                    <div class="text-center mb-12">
+                        <h3 class="text-4xl font-bold text-text-main">How CareerWiz Can Help You</h3>
+                        <p class="text-lg text-text-light mt-2">Get instant, actionable insights for your career questions.</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        <div class="feature-card p-10 rounded-2xl">
-                            <h4 class="text-2xl font-bold text-text-main mb-4 flex items-center"><span class="text-3xl mr-3">🗺️</span> Get Career Roadmaps</h4>
-                            <p class="text-text-light mb-6 leading-relaxed">Ask for a "deep dive" to get a complete step-by-step plan, from skills and education to job titles and resources.</p>
-                            <div class="glass p-4 rounded-lg text-sm text-text-main font-mono border-l-4 border-accent">"Give me a deep dive on a career in data science."</div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-bg-main p-8 rounded-xl border border-border-color transform hover:-translate-y-2 smooth-transition">
+                            <h4 class="text-2xl font-bold text-text-main mb-3"><span class="text-2xl mr-2">🗺️</span> Get Career Roadmaps</h4>
+                            <p class="text-text-light mb-4">Ask for a "deep dive" to get a complete step-by-step plan, from skills and education to potential job titles and resources.</p>
+                            <div class="bg-bg-light p-3 rounded-lg text-sm text-text-main font-mono">"Give me a deep dive on a career in data science."</div>
                         </div>
-                        <div class="feature-card p-10 rounded-2xl">
-                            <h4 class="text-2xl font-bold text-text-main mb-4 flex items-center"><span class="text-3xl mr-3">📊</span> Analyze Industry Trends</h4>
-                            <p class="text-text-light mb-6 leading-relaxed">Discover future trends, salary expectations, and in-demand skills to stay ahead of the curve.</p>
-                            <div class="glass p-4 rounded-lg text-sm text-text-main font-mono border-l-4 border-accent">"What is the salary for a remote data analyst?"</div>
+                        <div class="bg-bg-main p-8 rounded-xl border border-border-color transform hover:-translate-y-2 smooth-transition">
+                            <h4 class="text-2xl font-bold text-text-main mb-3"><span class="text-2xl mr-2">📊</span> Analyze Industry Trends</h4>
+                            <p class="text-text-light mb-4">Ask about the future of a field, salary expectations, or the most in-demand skills to stay ahead of the curve.</p>
+                            <div class="bg-bg-light p-3 rounded-lg text-sm text-text-main font-mono">"What is the salary for a remote data analyst?"</div>
                         </div>
-                        <div class="feature-card p-10 rounded-2xl">
-                            <h4 class="text-2xl font-bold text-text-main mb-4 flex items-center"><span class="text-3xl mr-3">📚</span> Discover Learning Resources</h4>
-                            <p class="text-text-light mb-6 leading-relaxed">Get curated lists of the best online courses, videos, and articles to build the skills you need to succeed.</p>
-                            <div class="glass p-4 rounded-lg text-sm text-text-main font-mono border-l-4 border-accent">"What skills do I need to transition from marketing to tech?"</div>
+                        <div class="bg-bg-main p-8 rounded-xl border border-border-color transform hover:-translate-y-2 smooth-transition">
+                            <h4 class="text-2xl font-bold text-text-main mb-3"><span class="text-2xl mr-2">📚</span> Discover Learning Resources</h4>
+                            <p class="text-text-light mb-4">Get a curated list of the best online courses, videos, and articles to help you build the skills you need to succeed.</p>
+                            <div class="bg-bg-light p-3 rounded-lg text-sm text-text-main font-mono">"I'm a marketing professional interested in tech. What are some roles that combine both, and what skills do I need to get there?"</div>
                         </div>
                     </div>
                 </div>
             </section>
         </main>
-        <footer class="bg-gradient-to-t from-bg-light to-bg-main border-t border-border-color py-20">
-            <div class="container mx-auto px-6 text-center md:text-left text-text-light">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div class="md:col-span-1">
-                        <h3 class="text-lg font-bold text-text-main mb-2">CareerWiz 🧙‍♂️</h3>
-                        <p class="text-base">Clarifying career paths with intelligent guidance.</p>
-                    </div>
-                    <div class="md:text-center">
-                        <h4 class="font-semibold text-text-main mb-4">Navigation</h4>
-                        <ul class="space-y-3 text-base">
-                            <li><a href="#how-the-magic-works-section" class="hover:text-accent smooth-transition">How It Works</a></li>
-                            <li><a href="#features-section" class="hover:text-accent smooth-transition">Features</a></li>
-                            <li><button id="about-btn-footer" class="hover:text-accent smooth-transition text-left w-full text-center">About CareerWiz</button></li>
-                        </ul>
-                    </div>
-                    <div class="md:text-center">
-                        <h4 class="font-semibold text-text-main mb-4">Resources & Legal</h4>
-                        <ul class="space-y-3 text-base">
-                            <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSfEDM-Q_Fh-PWPR4_Oers_dR9Hj9m7DrDBLNGHcnLKWz_eEoQ/viewform?usp=header" target="_blank" rel="noopener noreferrer" class="hover:text-accent smooth-transition">Feedback</a></li>
-                            <li><button id="privacy-btn-footer" class="hover:text-accent smooth-transition text-left w-full text-center">Privacy Policy</button></li>
-                            <li><button id="disclaimer-btn-footer" class="hover:text-accent smooth-transition text-left w-full text-center">Disclaimer</button></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="mt-16 pt-8 border-t border-border-color text-center text-sm">
-                    <p>© 2025 CareerWizAI. All Rights Reserved.</p>
-                </div>
-            </div>
-        </footer>
     </div>
 
     <div id="chat-app" class="hidden opacity-0 flex h-screen w-full bg-bg-main">
-        <aside id="sidebar" class="bg-bg-light h-full flex-shrink-0 absolute md:relative transform -translate-x-full md:transform-none smooth-transition z-30 glass">
+        <aside id="sidebar" class="bg-bg-light h-full flex-shrink-0 absolute md:relative transform -translate-x-full md:transform-none smooth-transition z-30">
             <div id="sidebar-content" class="h-full flex flex-col p-4">
-                <div class="flex-grow flex flex-col space-y-3 overflow-y-auto chat-scrollbar">
-                    <div class="flex items-center space-x-3 mb-6 flex-shrink-0">
-                        <button id="sidebar-pin-btn" class="p-3 rounded-xl hover:bg-border-color/50 smooth-transition">
+                <div class="flex-grow flex flex-col space-y-2 overflow-y-auto">
+                    <div class="flex items-center space-x-3 mb-4 flex-shrink-0">
+                        <button id="sidebar-pin-btn" class="p-2 rounded-full hover:bg-border-color/50 smooth-transition">
                             <svg class="w-6 h-6 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </button>
                     </div>
-
-                    <button id="dashboard-tab" class="sidebar-item w-full flex items-center p-4 rounded-xl smooth-transition flex-shrink-0">
-                        <div class="w-8 h-8 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></div>
-                        <span class="font-semibold sidebar-text ml-3 flex-grow text-left">Dashboard</span>
-                    </button>
-                    
-                    <button id="new-chat-btn" class="w-full flex items-center p-4 rounded-xl btn-enhanced text-white smooth-transition flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <div class="w-8 h-8 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
+                    <button id="new-chat-btn" class="w-full flex items-center p-3 rounded-lg bg-primary text-white hover:bg-accent smooth-transition flex-shrink-0 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <div class="w-8 h-8 flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002 2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></div>
                         <span class="font-semibold sidebar-text ml-3 flex-grow text-left">New Chat</span>
                     </button>
-
-                    <div class="h-px bg-border-color my-3"></div>
-
-                    <div id="chat-history-list" class="space-y-2 overflow-y-auto chat-scrollbar"></div>
+                    <div id="chat-history-list" class="space-y-1 overflow-y-auto chat-scrollbar"></div>
                 </div>
-                <div class="flex-shrink-0 pt-4">
+                <div class="flex-shrink-0 pt-2">
                     <div class="relative">
-                        <div id="settings-menu" class="absolute bottom-16 left-0 w-full glass rounded-xl p-3 hidden smooth-transition opacity-0 scale-95 z-40"></div><button id="settings-btn" class="w-full flex items-center space-x-3 p-4 rounded-xl hover:bg-border-color/50 smooth-transition">
-                            <div class="w-8 h-8 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg></div><span class="font-medium text-text-main sidebar-text">Settings</span>
+                        <div id="settings-menu" class="absolute bottom-14 left-0 w-full bg-bg-light border border-border-color rounded-lg p-2 hidden smooth-transition opacity-0 scale-95 z-40">
+                             </div>
+                        <button id="settings-btn" class="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-border-color/50 smooth-transition">
+                             <div class="w-8 h-8 flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
+                             <span class="font-medium text-text-main sidebar-text">Settings</span>
                         </button>
                     </div>
                 </div>
             </div>
         </aside>
-
+        
         <main id="main-content" class="h-screen flex flex-col flex-1 relative">
-            <header id="main-header" class="flex justify-between items-center p-6 border-b border-border-color glass z-20 flex-shrink-0">
-                <div class="flex items-center space-x-4">
-                    <button id="menu-btn" class="md:hidden p-3 rounded-xl hover:bg-bg-light smooth-transition">
+            <header class="flex justify-between items-center p-4 border-b border-border-color bg-bg-main/50 backdrop-blur-sm z-20 flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <button id="menu-btn" class="md:hidden p-2 rounded-full hover:bg-bg-light smooth-transition">
                         <svg class="w-6 h-6 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
-                    <h2 id="header-title" class="text-xl font-bold text-text-main">Dashboard</h2>
+                    <h2 class="text-lg font-semibold text-text-main">CareerWiz 🧙‍♂️</h2>
                 </div>
-                <div id="header-actions" class="flex items-center gap-4">
-                    <button id="edit-dashboard-btn" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-accent smooth-transition">Edit Info</button>
-                    <div class="status-indicator text-sm text-text-light flex items-center gap-2"><span>Agent Live</span></div>
+                 <div class="flex items-center space-x-2 text-sm text-text-light">
+                    <div class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></div>
                 </div>
             </header>
             
-            <div id="chat-area" class="hidden flex-1 flex flex-col w-full max-w-5xl mx-auto overflow-hidden">
+            <div class="flex-1 flex flex-col w-full max-w-4xl mx-auto overflow-hidden">
                 <div id="chat-window" class="flex-1 overflow-y-auto chat-scrollbar p-6">
-                    <div id="chat-log" class="space-y-8"></div>
-                </div>
-                <div class="p-6 w-full flex-shrink-0 bg-bg-main">
-                    <div class="relative w-full glass rounded-2xl border border-border-color smooth-transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30 focus-within:shadow-xl"><textarea id="chat-textarea" class="w-full bg-transparent border-none focus:ring-0 text-base text-text-main placeholder-text-light pl-6 pr-16 py-5 resize-none rounded-2xl" placeholder="Ask for a career roadmap, jobs, or skills..." rows="1"></textarea>
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center"><button id="send-btn" class="p-2.5 bg-primary rounded-lg smooth-transition text-white disabled:bg-secondary disabled:cursor-not-allowed transform hover:scale-110" disabled><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                                </svg></button></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="dashboard-pane" class="flex-1 p-6 overflow-y-auto space-y-8 chat-scrollbar">
-                <div class="glass rounded-2xl p-6 border border-border-color">
-                    <h3 class="text-xl font-semibold mb-4 text-text-main">User Information</h3>
-                    <div id="user-info-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-text-light">
-                        <div><strong class="text-text-light/80">Name:</strong> <span class="user-info-field" data-key="name">Not Set</span></div>
-                        <div><strong class="text-text-light/80">Status:</strong> <span class="user-info-field" data-key="status">Not Set</span></div>
-                        <div><strong class="text-text-light/80">Goal:</strong> <span class="user-info-field" data-key="goal">Not Set</span></div>
-                        <div><strong class="text-text-light/80">Education:</strong> <span class="user-info-field" data-key="education">Not Set</span></div>
-                        <div><strong class="text-text-light/80">Location:</strong> <span class="user-info-field" data-key="location">Not Set</span></div>
-                        <div class="md:col-span-2"><strong class="text-text-light/80">Skills:</strong> <span class="user-info-field" data-key="skills">Not Set</span></div>
-                    </div>
+                    <div id="chat-log" class="space-y-6"></div>
                 </div>
                 
-                <div class="glass rounded-2xl p-6 border border-border-color">
-                    <h3 class="text-xl font-semibold mb-4 text-text-main">Agent Recommended Resources</h3>
-                    <div id="agent-resources-list" class="space-y-3 text-accent">
-                         <p class="text-text-light/70">Agent-provided resources like articles, courses, and links will appear here.</p>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl p-6 border border-border-color">
-                    <h3 class="text-xl font-semibold mb-4 text-text-main">Task and Guides</h3>
-                    <div id="task-guides-list" class="space-y-4">
-                        <p class="text-text-light/70">Agent-provided tasks and guides will appear here.</p>
+                <div class="p-6 w-full flex-shrink-0">
+                    <div class="relative w-full bg-bg-light rounded-xl border border-border-color smooth-transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/50">
+                        <textarea id="chat-textarea" class="w-full bg-transparent border-none focus:ring-0 text-base text-text-main placeholder-text-light pl-4 pr-14 py-4 resize-none" placeholder="Ask for a career roadmap, jobs, or skills..." rows="1"></textarea>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                            <button id="send-btn" class="p-2 bg-primary rounded-lg smooth-transition text-white disabled:bg-secondary disabled:cursor-not-allowed" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="rename-modal-content" class="glass rounded-2xl w-full max-w-sm p-8 border border-border-color transform scale-95 smooth-transition">
-            <h3 class="text-xl font-bold text-text-main mb-2">Rename Chat</h3>
-            <p class="text-sm text-text-light mb-6">Enter a new name for this chat session.</p>
-            <input type="text" id="rename-input" class="w-full p-3 border border-border-color rounded-lg bg-bg-main text-text-main focus:ring-2 focus:ring-primary" placeholder="New chat name...">
-            <div class="flex justify-end mt-6 space-x-3">
-                <button id="rename-cancel-btn" class="px-5 py-2.5 bg-secondary hover:bg-border-color text-text-main font-semibold rounded-lg smooth-transition">Cancel</button>
-                <button id="rename-save-btn" class="px-5 py-2.5 bg-primary hover:bg-accent text-white font-semibold rounded-lg smooth-transition">Save</button>
-            </div>
-        </div>
-    </div>
     <div id="name-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="name-modal-content" class="glass rounded-2xl w-full max-w-sm p-8 border border-border-color transform scale-95 smooth-transition">
-            <h3 class="text-xl font-bold text-text-main mb-2">Welcome to CareerWiz!</h3>
-            <p class="text-sm text-text-light mb-6">To get started, please tell us your name.</p><input type="text" id="name-input" class="w-full p-3 border border-border-color rounded-lg bg-bg-main text-text-main focus:ring-2 focus:ring-primary" placeholder="Enter your name...">
-            <div class="flex justify-end mt-6"><button id="start-chatting-btn" class="px-6 py-2.5 bg-primary hover:bg-accent text-white font-semibold rounded-lg smooth-transition">Start Chatting</button></div>
-        </div>
-    </div>
-    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="task-modal-content" class="glass rounded-2xl w-full max-w-lg p-8 border border-border-color transform scale-95 smooth-transition">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="task-modal-title" class="text-xl font-bold text-text-main">Task Details</h3>
-                <button id="task-close-btn" class="p-1 rounded-full hover:bg-border-color">
-                    <svg class="w-5 h-5 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+        <div id="name-modal-content" class="bg-bg-light rounded-2xl w-full max-w-sm p-6 border border-border-color transform scale-95 smooth-transition">
+            <h3 class="text-lg font-bold text-text-main mb-2">Welcome to CareerWiz!</h3>
+            <p class="text-sm text-text-light mb-6">To get started, please tell us your name.</p>
+            <input type="text" id="name-input" class="w-full p-2 border border-border-color rounded-lg bg-bg-main text-text-main focus:ring-2 focus:ring-primary" placeholder="Enter your name...">
+            <div class="flex justify-end mt-4">
+                <button id="start-chatting-btn" class="px-5 py-2 bg-primary hover:bg-accent text-white text-sm font-semibold rounded-lg smooth-transition">Start Chatting</button>
             </div>
-            <div id="task-modal-body" class="text-sm text-text-light space-y-4"></div>
         </div>
     </div>
     <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="about-modal-content" class="glass rounded-2xl w-full max-w-lg p-8 border border-border-color transform scale-95 smooth-transition">
+        <div id="about-modal-content" class="bg-bg-light rounded-2xl w-full max-w-lg p-6 border border-border-color transform scale-95 smooth-transition">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-text-main">About CareerWiz 🧙‍♂️</h3><button id="about-close-btn" class="p-1 rounded-full hover:bg-border-color"><svg class="w-5 h-5 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg></button>
+                 <h3 class="text-lg font-bold text-text-main">About CareerWiz 🧙‍♂️</h3>
+                 <button id="about-close-btn" class="p-1 rounded-full hover:bg-border-color"><svg class="w-5 h-5 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="text-sm text-text-light space-y-4">
                 <p><strong>What is CareerWiz?</strong><br>CareerWiz is an intelligent AI career counselor designed to provide personalized, structured, and actionable guidance for your professional journey. It helps you explore career paths, understand requirements, and create a roadmap to success.</p>
@@ -595,794 +240,516 @@
         </div>
     </div>
     <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="delete-modal-content" class="glass rounded-2xl w-full max-w-sm p-8 border border-border-color transform scale-95 smooth-transition">
-            <h3 class="text-xl font-bold text-text-main mb-2">Delete Chat</h3>
+        <div id="delete-modal-content" class="bg-bg-light rounded-2xl w-full max-w-sm p-6 border border-border-color transform scale-95 smooth-transition">
+            <h3 class="text-lg font-bold text-text-main mb-2">Delete Chat</h3>
             <p class="text-sm text-text-light mb-6">Are you sure you want to delete this chat? This action cannot be undone.</p>
-            <div class="flex justify-end space-x-3"><button id="delete-cancel-btn" class="px-5 py-2.5 bg-secondary hover:bg-border-color text-text-main font-semibold rounded-lg smooth-transition">Cancel</button><button id="delete-confirm-btn" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg smooth-transition">Delete</button></div>
+            <div class="flex justify-end space-x-3">
+                <button id="delete-cancel-btn" class="px-5 py-2 bg-secondary hover:bg-border-color text-text-main text-sm font-semibold rounded-lg smooth-transition">Cancel</button>
+                <button id="delete-confirm-btn" class="px-5 py-2 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold rounded-lg smooth-transition">Delete</button>
+            </div>
         </div>
     </div>
     <div id="course-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="modal-content" class="glass rounded-2xl w-full max-w-md p-8 border border-border-color transform scale-95 smooth-transition">
-            <h3 class="text-xl font-bold text-text-main mb-2">Confirm Navigation</h3>
+        <div id="modal-content" class="bg-bg-light rounded-2xl w-full max-w-md p-6 border border-border-color transform scale-95 smooth-transition">
+            <h3 class="text-lg font-bold text-text-main mb-2">Confirm Navigation</h3>
             <p class="text-sm text-text-light mb-6">You are about to navigate to an external website. Do you want to proceed?</p>
             <div class="bg-border-color/50 p-3 rounded-lg mb-6">
                 <p id="modal-course-title" class="text-text-main font-semibold truncate"></p>
                 <p id="modal-course-url" class="text-xs text-accent truncate"></p>
             </div>
-            <div class="flex justify-end space-x-3"><button id="modal-cancel-btn" class="px-5 py-2.5 bg-secondary hover:bg-border-color text-text-main font-semibold rounded-lg smooth-transition">Cancel</button><a id="modal-proceed-btn" href="#" target="_blank" class="px-5 py-2.5 bg-primary hover:bg-accent text-white font-semibold rounded-lg smooth-transition inline-block">Proceed</a></div>
-        </div>
-    </div>
-    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="privacy-modal-content" class="glass rounded-2xl w-full max-w-lg p-8 border border-border-color transform scale-95 smooth-transition">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-text-main">Privacy Policy</h3><button id="privacy-close-btn" class="p-1 rounded-full hover:bg-border-color"><svg class="w-5 h-5 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg></button>
-            </div>
-            <div class="text-sm text-text-light space-y-4">
-                <p>Your privacy is important to us. CareerWiz is designed to respect your data by storing all your chat conversations directly in your browser's local storage.</p>
-                <p><strong>No data is sent to or stored on our servers.</strong> Everything remains on your device. Clearing your browser's storage for this site will permanently delete your chat history.</p>
+            <div class="flex justify-end space-x-3">
+                <button id="modal-cancel-btn" class="px-5 py-2 bg-secondary hover:bg-border-color text-text-main text-sm font-semibold rounded-lg smooth-transition">Cancel</button>
+                <a id="modal-proceed-btn" href="#" target="_blank" class="px-5 py-2 bg-primary hover:bg-accent text-white text-sm font-semibold rounded-lg smooth-transition">Proceed</a>
             </div>
         </div>
     </div>
-    <div id="disclaimer-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="disclaimer-modal-content" class="glass rounded-2xl w-full max-w-lg p-8 border border-border-color transform scale-95 smooth-transition">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-text-main">Disclaimer</h3><button id="disclaimer-close-btn" class="p-1 rounded-full hover:bg-border-color"><svg class="w-5 h-5 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg></button>
-            </div>
-            <div class="text-sm text-text-light space-y-4">
-                <p>The information and guidance provided by CareerWiz are generated by an artificial intelligence model and are for informational purposes only.</p>
-                <p>While we strive to provide accurate and up-to-date information, we make no warranties regarding the completeness or accuracy of the advice. It should not be considered a substitute for professional career counseling. Always verify information and consult with qualified professionals before making career decisions.</p>
-            </div>
-        </div>
-    </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Element Selections ---
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('menu-btn');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const chatHistoryList = document.getElementById('chat-history-list');
+    const landingPage = document.getElementById('landing-page');
+    const chatApp = document.getElementById('chat-app');
+    const startChatBtn = document.getElementById('start-chat-btn');
+    const chatTextarea = document.getElementById('chat-textarea');
+    const chatLog = document.getElementById('chat-log');
+    const chatWindow = document.getElementById('chat-window');
+    const sendButton = document.getElementById('send-btn');
+    const deleteModal = document.getElementById('delete-modal');
+    const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+    const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+    const courseModal = document.getElementById('course-modal');
+    const modalCourseTitle = document.getElementById('modal-course-title');
+    const modalCourseUrl = document.getElementById('modal-course-url');
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+    const modalProceedBtn = document.getElementById('modal-proceed-btn');
+    const aboutModal = document.getElementById('about-modal');
+    const aboutCloseBtn = document.getElementById('about-close-btn');
+    const nameModal = document.getElementById('name-modal');
+    const nameInput = document.getElementById('name-input');
+    const startChattingBtn = document.getElementById('start-chatting-btn');
+    const sidebarPinBtn = document.getElementById('sidebar-pin-btn');
+    const aboutBtnLanding = document.getElementById('about-btn-landing');
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsMenu = document.getElementById('settings-menu');
+    const learnMoreBtn = document.getElementById('learn-more-btn');
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-             // --- Agent System Prompt ---
-            const SYSTEM_PROMPT = `You are CareerWiz, an expert AI career counselor. Your goal is to provide personalized, actionable career guidance. 
-            1.  **Assess User Profile**: Analyze the user's skills, interests, education, location, and career goals from their profile.
-            2.  **Identify Gaps**: Compare their profile to their stated career goals and identify any gaps in skills, education, or experience.
-            3.  **Analyze Market Trends**: Use your knowledge to provide insights into current job market trends, in-demand skills, and salary expectations relevant to the user's goal and location.
-            4.  **Develop a Plan**: Create a realistic, step-by-step development plan (e.g., a 30-day plan). This plan should be tailored to bridge the gaps you identified. Each step should have a clear title and a detailed description.
-            5.  **Recommend Resources**: Suggest specific, high-quality resources (articles, courses, universities) using the format [RESOURCE:Title~URL].
-            6.  **Response Structure**: When a user asks for a plan, your response must be a JSON object containing a "reply" object. This object must include:
-                - "text": A conversational response.
-                - "tasks": An array of objects, where each object represents a step in the plan and has "title" and "description" properties.
-            `;
+    // --- State Variables ---
+    let chats = [];
+    let activeChatId = null;
+    const MAX_CHATS = 4;
+    let chatToDeleteId = null;
+    let isSidebarPinned = localStorage.getItem('sidebarPinned') === 'true';
 
-            // --- Element Selections ---
-            const sidebar = document.getElementById('sidebar');
-            const menuBtn = document.getElementById('menu-btn');
-            const newChatBtn = document.getElementById('new-chat-btn');
-            const chatHistoryList = document.getElementById('chat-history-list');
-            const landingPage = document.getElementById('landing-page');
-            const chatApp = document.getElementById('chat-app');
-            const startChatBtn = document.getElementById('start-chat-btn');
-            const chatTextarea = document.getElementById('chat-textarea');
-            const chatLog = document.getElementById('chat-log');
-            const chatWindow = document.getElementById('chat-window');
-            const sendButton = document.getElementById('send-btn');
-            const deleteModal = document.getElementById('delete-modal');
-            const courseModal = document.getElementById('course-modal');
-            const aboutModal = document.getElementById('about-modal');
-            const nameModal = document.getElementById('name-modal');
-            const privacyModal = document.getElementById('privacy-modal');
-            const disclaimerModal = document.getElementById('disclaimer-modal');
-            const renameModal = document.getElementById('rename-modal');
-            const taskModal = document.getElementById('task-modal');
-            const deleteCancelBtn = document.getElementById('delete-cancel-btn');
-            const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
-            const modalCancelBtn = document.getElementById('modal-cancel-btn');
-            const modalProceedBtn = document.getElementById('modal-proceed-btn');
-            const aboutCloseBtn = document.getElementById('about-close-btn');
-            const taskCloseBtn = document.getElementById('task-close-btn');
-            const startChattingBtn = document.getElementById('start-chatting-btn');
-            const sidebarPinBtn = document.getElementById('sidebar-pin-btn');
-            const settingsBtn = document.getElementById('settings-btn');
-            const learnMoreBtn = document.getElementById('learn-more-btn');
-            const aboutBtnFooter = document.getElementById('about-btn-footer');
-            const privacyBtnFooter = document.getElementById('privacy-btn-footer');
-            const disclaimerBtnFooter = document.getElementById('disclaimer-btn-footer');
-            const privacyCloseBtn = document.getElementById('privacy-close-btn');
-            const disclaimerCloseBtn = document.getElementById('disclaimer-close-btn');
-            const nameInput = document.getElementById('name-input');
-            const renameInput = document.getElementById('rename-input');
-            const renameCancelBtn = document.getElementById('rename-cancel-btn');
-            const renameSaveBtn = document.getElementById('rename-save-btn');
-            const modalCourseTitle = document.getElementById('modal-course-title');
-            const modalCourseUrl = document.getElementById('modal-course-url');
-            const settingsMenu = document.getElementById('settings-menu');
-            const notification = document.getElementById('notification');
-            const taskModalTitle = document.getElementById('task-modal-title');
-            const taskModalBody = document.getElementById('task-modal-body');
+    // --- Shared Settings Menu Content ---
+    const settingsMenuContent = `
+        <button id="home-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span class="sidebar-text">Home</span>
+        </button>
+        <button id="about-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="sidebar-text">About</span>
+        </button>
+        <div class="h-px bg-border-color my-1"></div>
+        <p class="px-2 py-1 text-xs font-semibold text-text-light sidebar-text">THEMES</p>
+        <button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="starlight">✨ Starlight</button>
+        <button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="goldenrod">🍂 Goldenrod</button>
+    `;
+    settingsMenu.innerHTML = settingsMenuContent;
+    
+    // --- Sidebar & Settings Logic ---
+    const applyPinState = () => {
+        if (isSidebarPinned) sidebar.classList.add('is-expanded');
+        else sidebar.classList.remove('is-expanded');
+        localStorage.setItem('sidebarPinned', isSidebarPinned);
+    };
 
-            // --- Dashboard/Chat View Elements ---
-            const dashboardTab = document.getElementById('dashboard-tab');
-            const dashboardPane = document.getElementById('dashboard-pane');
-            const chatArea = document.getElementById('chat-area');
-            const headerTitle = document.getElementById('header-title');
-            const editDashboardBtn = document.getElementById('edit-dashboard-btn');
-            const userInfoFields = document.querySelectorAll('.user-info-field');
-            const agentResourcesList = document.getElementById('agent-resources-list');
-            const taskGuidesList = document.getElementById('task-guides-list');
-            const statusIndicator = document.querySelector('.status-indicator');
+    sidebarPinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isSidebarPinned = !isSidebarPinned;
+        applyPinState();
+    });
 
-            // --- State Variables ---
-            let chats = [],
-                activeChatId = null,
-                chatToDeleteId = null,
-                chatToRenameId = null,
-                activeSidebarItem = null;
-            let userProfile = {};
-            const MAX_CHATS = 4;
-            let isSidebarPinned = localStorage.getItem('sidebarPinned') === 'true';
-            let isEditingProfile = false;
+    menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.remove('-translate-x-full');
+    });
 
-            const settingsMenuContent = `<button id="home-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span class="sidebar-text">Home</span></button><button id="about-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="sidebar-text">About</span></button><div class="h-px bg-border-color my-1"></div><p class="px-2 py-1 text-xs font-semibold text-text-light sidebar-text">THEMES</p><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="starlight">✨ Starlight</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="goldenrod">🍂 Goldenrod</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="cyberpunk">👾 Cyberpunk</button>`;
-            settingsMenu.innerHTML = settingsMenuContent;
+    document.getElementById('main-content').addEventListener('click', () => {
+        if (window.innerWidth < 768) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
 
-            // --- Dashboard Logic ---
-            function loadUserProfile() {
-                const savedProfile = localStorage.getItem('careerWizUserProfile');
-                userProfile = savedProfile ? JSON.parse(savedProfile) : {
-                    name: 'Not Set',
-                    status: 'Not Set',
-                    goal: 'Not Set',
-                    education: 'Not Set',
-                    location: 'Not Set',
-                    skills: 'Not Set',
-                    tasks: [],
-                    resources: []
-                };
-                if (!userProfile.resources) userProfile.resources = [];
-                if (!userProfile.tasks) userProfile.tasks = [];
-            }
+    function toggleSettingsMenu(menu) {
+        menu.classList.toggle('hidden');
+        setTimeout(() => {
+            menu.classList.toggle('opacity-0');
+            menu.classList.toggle('scale-95');
+        }, 10);
+    }
+    
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.add('is-expanded');
+        toggleSettingsMenu(settingsMenu);
+    });
 
-            function saveUserProfile() {
-                localStorage.setItem('careerWizUserProfile', JSON.stringify(userProfile));
-            }
-
-            function renderDashboard() {
-                userInfoFields.forEach(field => {
-                    const key = field.dataset.key;
-                    if (userProfile[key]) {
-                        field.textContent = userProfile[key];
-                    }
-                });
-                renderAgentResources();
-                renderTasksAndGuides();
-            }
-
-            function renderAgentResources() {
-                agentResourcesList.innerHTML = '';
-                if (userProfile.resources.length === 0) {
-                    agentResourcesList.innerHTML = `<p class="text-text-light/70">Agent-provided resources like articles, courses, and links will appear here.</p>`;
-                } else {
-                    const list = document.createElement('ul');
-                    list.className = 'space-y-3 list-disc list-inside';
-                    userProfile.resources.forEach(res => {
-                        const item = document.createElement('li');
-                        item.innerHTML = `<a href="${res.url}" target="_blank" rel="noopener noreferrer" class="hover:underline text-text-light">${res.title}</a>`;
-                        list.appendChild(item);
-                    });
-                    agentResourcesList.appendChild(list);
-                }
-            }
-
-            function renderTasksAndGuides() {
-                taskGuidesList.innerHTML = '';
-                if (userProfile.tasks.length === 0) {
-                    taskGuidesList.innerHTML = `<p class="text-text-light/70">Agent-provided tasks and guides will appear here.</p>`;
-                } else {
-                    userProfile.tasks.forEach(task => {
-                        const button = document.createElement('button');
-                        button.className = 'w-full text-left p-3 rounded-lg bg-secondary hover:bg-border-color smooth-transition';
-                        button.textContent = task.title;
-                        button.onclick = () => {
-                            taskModalTitle.textContent = task.title;
-                            taskModalBody.innerHTML = marked.parse(task.description);
-                            openModal(taskModal, taskModal.querySelector('#task-modal-content'));
-                        };
-                        taskGuidesList.appendChild(button);
-                    });
-                }
-            }
-            
-            editDashboardBtn.addEventListener('click', () => {
-                isEditingProfile = !isEditingProfile;
-                editDashboardBtn.textContent = isEditingProfile ? 'Save Info' : 'Edit Info';
-
-                if (isEditingProfile) {
-                     userInfoFields.forEach(field => field.setAttribute('contenteditable', 'true'));
-                     userInfoFields[0].focus();
-                } else {
-                    userInfoFields.forEach(field => {
-                        field.setAttribute('contenteditable', 'false');
-                        userProfile[field.dataset.key] = field.textContent.trim();
-                    });
-                    saveUserProfile();
-                    showNotification('Profile saved!');
-                    renderDashboard();
-                }
-            });
-
-            // --- General UI Logic ---
-            function switchView(view) {
-                if (view === 'dashboard') {
-                    dashboardPane.classList.remove('hidden');
-                    chatArea.classList.add('hidden');
-                    headerTitle.textContent = 'Dashboard';
-                    editDashboardBtn.classList.remove('hidden');
-                    statusIndicator.classList.add('hidden');
-                } else {
-                    dashboardPane.classList.add('hidden');
-                    chatArea.classList.remove('hidden');
-                    const activeChat = chats.find(c => c.id === activeChatId);
-                    headerTitle.textContent = activeChat ? activeChat.name : 'New Chat';
-                    editDashboardBtn.classList.add('hidden');
-                    statusIndicator.classList.remove('hidden');
-                }
-            }
-            
-            function setActiveSidebarItem(item) {
-                if(activeSidebarItem) {
-                    activeSidebarItem.classList.remove('bg-primary/20', 'text-accent');
-                }
-                item.classList.add('bg-primary/20', 'text-accent');
-                activeSidebarItem = item;
-            }
-
-            function openModal(modal, content) {
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    if(content) content.classList.remove('scale-95');
-                }, 10);
-            }
-
-            function closeModal(modal, content) {
-                modal.classList.add('opacity-0');
-                if(content) content.classList.add('scale-95');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
-
-            function applyTheme(theme) {
-                document.documentElement.className = theme;
-                localStorage.setItem('careerWizTheme', theme);
-            }
-
-            function showNotification(message, type = 'success') {
-                notification.textContent = message;
-                notification.className = `notification ${type} show`;
-                setTimeout(() => notification.classList.remove('show'), 3000);
-            }
-
-            const applyPinState = () => {
-                if (isSidebarPinned) sidebar.classList.add('is-expanded');
-                else sidebar.classList.remove('is-expanded');
-                localStorage.setItem('sidebarPinned', isSidebarPinned);
-            };
-            sidebarPinBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                isSidebarPinned = !isSidebarPinned;
-                applyPinState();
-            });
-            menuBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sidebar.classList.remove('-translate-x-full');
-            });
-            document.getElementById('main-content').addEventListener('click', () => {
-                if (window.innerWidth < 768) sidebar.classList.add('-translate-x-full');
-            });
-
-            function toggleSettingsMenu(menu) {
-                menu.classList.toggle('hidden');
-                setTimeout(() => {
-                    menu.classList.toggle('opacity-0');
-                    menu.classList.toggle('scale-95');
-                }, 10);
-            }
-            settingsBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sidebar.classList.add('is-expanded');
-                toggleSettingsMenu(settingsMenu);
-            });
-            document.addEventListener('click', (e) => {
-                if (!settingsMenu.classList.contains('hidden') && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) toggleSettingsMenu(settingsMenu);
-            });
-
-            // --- Chat Logic ---
-            function updateNewChatButtonState() {
-                const activeChat = chats.find(c => c.id === activeChatId);
-                const isCurrentChatEmpty = activeChat ? activeChat.history.length === 0 : false;
-                newChatBtn.disabled = chats.length >= MAX_CHATS || isCurrentChatEmpty;
-            }
-
-            function generateChatId() {
-                return `chat_${Date.now()}`;
-            }
-
-            function saveChats() {
-                localStorage.setItem('careerWizChats', JSON.stringify(chats));
-                localStorage.setItem('careerWizActiveChat', activeChatId);
-            }
-
-            function loadChats() {
-                const saved = localStorage.getItem('careerWizChats');
-                chats = (saved && JSON.parse(saved).length > 0) ? JSON.parse(saved) : [];
-                activeChatId = localStorage.getItem('careerWizActiveChat');
-                if (!chats.find(c => c.id === activeChatId)) activeChatId = chats.length > 0 ? chats[0].id : null;
-                if (chats.length === 0) createNewChat(false);
-            }
-
-            function createNewChat(save = true) {
-                if (chats.length >= MAX_CHATS) {
-                    showNotification('Chat limit reached.', 'error');
-                    return;
-                }
-                const newId = generateChatId();
-                let maxNum = chats.reduce((max, c) => {
-                    const match = c.name.match(/(\d+)/);
-                    return (match && parseInt(match[1]) > max) ? parseInt(match[1]) : max;
-                }, 0);
-                const newChat = {
-                    id: newId,
-                    name: `Career Chat ${maxNum + 1}`,
-                    history: []
-                };
-                chats.push(newChat);
-                setActiveChat(newId, save);
-            }
-
-            function setActiveChat(id, save = true) {
-                activeChatId = id;
-                const chat = chats.find(c => c.id === id);
-                headerTitle.textContent = chat ? chat.name : "New Chat";
-                renderChatHistory();
-                renderActiveChatMessages();
-                if (save) saveChats();
-            }
-
-            function renderChatHistory() {
-                chatHistoryList.innerHTML = '';
-                chats.forEach(c => {
-                    const item = document.createElement('div');
-                    item.className = `sidebar-item chat-history-item relative group flex items-center p-3 rounded-lg smooth-transition cursor-pointer`;
-                    item.innerHTML = `<div class="flex-grow text-left truncate flex items-center space-x-3 pointer-events-none"><svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg><span class="sidebar-text">${c.name}</span></div><div class="chat-actions absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex items-center space-x-1"><button class="rename-btn p-1 rounded hover:bg-border-color text-text-light"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button><button class="delete-btn p-1 rounded hover:bg-red-500/20 text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
-                    
-                    if (c.id === activeChatId) {
-                        item.classList.add('bg-primary/20', 'text-accent');
-                    } else {
-                        item.classList.add('hover:bg-border-color/50');
-                    }
-
-                    item.addEventListener('click', (e) => {
-                      if(!e.target.closest('.chat-actions')) {
-                        switchView('chat');
-                        setActiveChat(c.id);
-                        setActiveSidebarItem(item);
-                      }
-                    });
-
-                    item.querySelector('.rename-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        chatToRenameId = c.id;
-                        renameInput.value = c.name;
-                        openModal(renameModal, renameModal.querySelector('#rename-modal-content'));
-                        renameInput.focus();
-                    });
-
-                    item.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        chatToDeleteId = c.id;
-                        openModal(deleteModal, deleteModal.querySelector('#delete-modal-content'));
-                    });
-                    chatHistoryList.appendChild(item);
-                });
-                updateNewChatButtonState();
-            }
-
-            function renderActiveChatMessages() {
-                chatLog.innerHTML = '';
-                const chat = chats.find(c => c.id === activeChatId);
-                if (!chat) return;
-                if (chat.history.length === 0) displayInitialAgentMessage();
-                else chat.history.forEach(m => (m.role === 'user') ? displayUserMessage(m.text) : displayAgentMessage(m.data));
-                scrollToBottom();
-            }
-
-            function handleUserSubmit() {
-                const query = chatTextarea.value.trim();
-                if (query) {
-                    triggerChat(query);
-                    chatTextarea.value = '';
-                    sendButton.disabled = true;
-                    chatTextarea.style.height = 'auto';
-                }
-            }
-
-            async function triggerChat(query) {
-                const chat = chats.find(c => c.id === activeChatId);
-                if (!chat) return;
-                chat.history.push({ role: 'user', text: query });
-                saveChats();
-                displayUserMessage(query);
-                showLoadingIndicator();
-                chatTextarea.disabled = true;
-                sendButton.disabled = true;
-
-                if (chat.history.length === 1) {
-                    updateNewChatButtonState();
-                }
-
-                try {
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    let data;
-                    if (query.toLowerCase().includes('30 day plan') || query.toLowerCase().includes('deep dive')) {
-                        data = { 
-                            reply: { 
-                                text: `I've created a 30-day plan to help you get started as a UI/UX designer. You can find the detailed steps in your dashboard under "Task and Guides".`,
-                                tasks: [
-                                    {
-                                        title: "Week 1: Foundational Knowledge",
-                                        description: "### Days 1-3: Understand the Core Principles\n- Read about the fundamentals of UX design (User-Centered Design, Usability, Accessibility).\n- Watch videos on the principles of UI design (Color Theory, Typography, Layout).\n\n### Days 4-7: Learn the Tools\n- Download and install Figma or Adobe XD.\n- Complete beginner tutorials for the tool of your choice."
-                                    },
-                                    {
-                                        title: "Week 2: Practical Application",
-                                        description: "### Days 8-10: Deconstruct and Recreate\n- Find a simple app you like and try to recreate one of its screens in Figma/XD.\n- Pay close attention to spacing, font sizes, and color usage.\n\n### Days 11-14: First Mini-Project\n- Design a simple one-page website for a fictional local business (e.g., a coffee shop)."
-                                    },
-                                    {
-                                        title: "Week 3: User-Centered Design",
-                                        description: "### Days 15-21: Focus on the User\n- Learn about creating user personas and user flows.\n- Create a simple persona and a user flow for the mini-project you designed in Week 2."
-                                    },
-                                    {
-                                        title: "Week 4: Portfolio and Networking",
-                                        description: "### Days 22-30: Build Your Presence\n- Start a portfolio on a platform like Behance or Dribbble.\n- Add your mini-project and the recreated screen.\n- Join a design community online and start networking."
-                                    }
-                                ]
-                            } 
-                        };
-                    } else {
-                        data = {
-                            reply: {
-                                text: "I can help with that. To give you the best advice, could you please tell me more about your career goals and current skills? For a detailed plan, you can ask me for a '30-day plan' or a 'deep dive' into a specific career."
-                            }
-                        };
-                    }
-                    
-                    if (data.reply.tasks) {
-                        userProfile.tasks = data.reply.tasks;
-                        saveUserProfile();
-                        renderDashboard();
-                        showNotification('Tasks and Guides have been updated!');
-                    }
-
-                    chat.history.push({ role: 'agent', data: data.reply });
-                    saveChats();
-                    removeLoadingIndicator();
-                    displayAgentMessage(data.reply);
-
-                } catch (err) {
-                    console.error('Chat API error:', err);
-                    removeLoadingIndicator();
-                    displayAgentMessage({
-                        error: "Sorry, I'm having trouble connecting. Please check the backend server logs."
-                    });
-                } finally {
-                    chatTextarea.disabled = false;
-                    sendButton.disabled = chatTextarea.value.trim().length === 0;
-                    chatTextarea.focus();
-                }
-            }
-            
-            function parseAgentResponse(text) {
-                const html = text.replace(/\[RESOURCE:([^~]+)~([^\]]+)\]/g, (match, title, url) => {
-                    if (!userProfile.resources.some(r => r.url === url)) {
-                        userProfile.resources.push({ title, url });
-                        saveUserProfile();
-                        renderAgentResources();
-                    }
-                    return `<a href="${url}" target="_blank" data-is-resource="true" data-resource-title="${title}" class="text-accent underline font-medium hover:opacity-80">${title}</a>`;
-                });
-                return marked.parse(html);
-            }
-
-            function getTextForClipboard(html) {
-                const div = document.createElement('div');
-                div.innerHTML = html;
-                return div.textContent || div.innerText || "";
-            }
-
-            function displayAgentMessage(reply) {
-                if (reply && reply.error) {
-                    appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-red-500 font-bold text-lg">!</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><h4 class="font-bold text-red-500 mb-2">An Error Occurred</h4><p class="text-sm text-text-light font-mono bg-secondary p-2 rounded">${reply.error}</p></div></div>`);
-                    return;
-                }
-                const text = reply.text || 'An error occurred.';
-                const html = parseAgentResponse(text);
-                appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><button class="copy-btn absolute top-2 right-2 p-1.5 rounded-full bg-border-color/50 hover:bg-border-color smooth-transition text-text-light" title="Copy text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><div class="agent-message-content">${html}</div></div></div>`);
-                const copyBtn = chatLog.lastChild.querySelector('.copy-btn');
-                if (copyBtn) copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(getTextForClipboard(html).trim()).then(() => {
-                        showNotification('Copied to clipboard!');
-                        copyBtn.innerHTML = '<svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-                        setTimeout(() => copyBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`, 2000);
-                    }).catch(err => showNotification('Failed to copy!', 'error'));
-                });
-            }
-
-            function displayInitialAgentMessage() {
-                const name = userProfile.name === 'Not Set' ? 'there' : userProfile.name;
-                const welcomeHTML = `<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="glass rounded-2xl p-5 max-w-2xl text-text-light"><h3 class="font-bold text-lg text-text-main mb-2">Welcome to CareerWiz, ${name}!</h3><p class="mb-4 text-base">I'm ready to help you navigate your career path. You can ask me for a deep dive on a career, for job trends, or for learning resources. What's on your mind today?</p></div></div>`;
-                appendMessage(welcomeHTML);
-            }
-
-            function displayUserMessage(msg) {
-                appendMessage(`<div class="bg-primary rounded-2xl p-4 max-w-2xl text-white text-base">${msg.replace(/\n/g, '<br>')}</div>`, 'user');
-            }
-
-            function showLoadingIndicator() {
-                appendMessage(`<div id="loading" class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="glass rounded-2xl p-4 flex items-center space-x-2 text-text-light text-base"><span class="loading-dots inline-flex gap-1"><span></span><span></span><span></span></span></div></div>`, 'agent', 'loading');
-            }
-
-            function removeLoadingIndicator() {
-                const el = document.getElementById('loading');
-                if (el) el.remove();
-            }
-
-            function appendMessage(html, role = 'agent', id = null) {
-                const wrapper = document.createElement('div');
-                wrapper.className = `w-full flex message-bubble ${role === 'user' ? 'justify-end' : 'justify-start'}`;
-                if (id) wrapper.id = id;
-                wrapper.innerHTML = html;
-                chatLog.appendChild(wrapper);
-                scrollToBottom();
-            }
-
-            function scrollToBottom() {
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            }
-
-            window.openResourceModal = (title, url) => {
-                modalCourseTitle.textContent = title;
-                modalCourseUrl.textContent = url;
-                modalProceedBtn.href = url;
-                openModal(courseModal, courseModal.querySelector('#modal-content'));
-            };
-
-            // --- Event Listeners ---
-            dashboardTab.addEventListener('click', () => {
-                switchView('dashboard');
-                setActiveSidebarItem(dashboardTab);
-            });
-
-            newChatBtn.addEventListener('click', () => {
-                createNewChat();
-                const newChatTab = chatHistoryList.lastChild;
-                setActiveSidebarItem(newChatTab);
-                switchView('chat');
-            });
-            
-            startChatBtn.addEventListener('click', () => {
-                if (!localStorage.getItem('careerWizUserProfile')) {
-                    openModal(nameModal, nameModal.querySelector('#name-modal-content'));
-                } else {
-                    landingPage.classList.add('opacity-0');
-                    setTimeout(() => {
-                        landingPage.classList.add('hidden');
-                        chatApp.classList.remove('hidden');
-                        setTimeout(() => {
-                            chatApp.classList.remove('opacity-0');
-                            switchView('chat'); // Open chat pane by default
-                            const activeChatTab = Array.from(chatHistoryList.children).find(child => child.classList.contains('bg-primary/20'));
-                            if (!activeChatTab) {
-                                setActiveSidebarItem(chatHistoryList.firstChild);
-                            }
-                        }, 50);
-                    }, 300);
-                }
-            });
-
-            learnMoreBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('how-the-magic-works-section').scrollIntoView({ behavior: 'smooth' });
-            });
-
-            startChattingBtn.addEventListener('click', () => {
-                const name = nameInput.value.trim();
-                if (name) {
-                    userProfile.name = name;
-                    saveUserProfile();
-                    renderDashboard();
-                    closeModal(nameModal, nameModal.querySelector('#name-modal-content'));
-                    startChatBtn.click();
-                }
-            });
-
-            aboutBtnFooter.addEventListener('click', () => openModal(aboutModal, aboutModal.querySelector('#about-modal-content')));
-            privacyBtnFooter.addEventListener('click', () => openModal(privacyModal, privacyModal.querySelector('#privacy-modal-content')));
-            disclaimerBtnFooter.addEventListener('click', () => openModal(disclaimerModal, disclaimerModal.querySelector('#disclaimer-modal-content')));
-            privacyCloseBtn.addEventListener('click', () => closeModal(privacyModal, privacyModal.querySelector('#privacy-modal-content')));
-            disclaimerCloseBtn.addEventListener('click', () => closeModal(disclaimerModal, disclaimerModal.querySelector('#disclaimer-modal-content')));
-            aboutCloseBtn.addEventListener('click', () => closeModal(aboutModal, aboutModal.querySelector('#about-modal-content')));
-            taskCloseBtn.addEventListener('click', () => closeModal(taskModal, taskModal.querySelector('#task-modal-content')));
-
-            deleteCancelBtn.addEventListener('click', () => closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content')));
-            modalCancelBtn.addEventListener('click', () => closeModal(courseModal, courseModal.querySelector('#modal-content')));
-            renameCancelBtn.addEventListener('click', () => closeModal(renameModal, renameModal.querySelector('#rename-modal-content')));
-
-            deleteConfirmBtn.addEventListener('click', () => {
-                if (chatToDeleteId) {
-                    chats = chats.filter(c => c.id !== chatToDeleteId);
-                    if (activeChatId === chatToDeleteId) activeChatId = null;
-                    if (chats.length === 0) createNewChat();
-                    else {
-                        if (!activeChatId) activeChatId = chats[0].id;
-                        setActiveChat(activeChatId);
-                    }
-                    saveChats();
-                    renderChatHistory();
-                }
-                closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content'));
-            });
-
-            renameSaveBtn.addEventListener('click', () => {
-                const newName = renameInput.value.trim();
-                if (newName && chatToRenameId) {
-                    const chat = chats.find(c => c.id === chatToRenameId);
-                    if (chat) {
-                        chat.name = newName;
-                        saveChats();
-                        renderChatHistory();
-                        if (chat.id === activeChatId) {
-                            headerTitle.textContent = newName;
-                        }
-                    }
-                }
-                closeModal(renameModal, renameModal.querySelector('#rename-modal-content'));
-            });
-
-            modalProceedBtn.addEventListener('click', () => setTimeout(() => closeModal(courseModal, courseModal.querySelector('#modal-content')), 200));
-
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('#home-btn-menu')) {
-                    chatApp.classList.add('opacity-0');
-                    setTimeout(() => {
-                        chatApp.classList.add('hidden');
-                        landingPage.classList.remove('hidden');
-                        setTimeout(() => landingPage.classList.remove('opacity-0'), 50);
-                    }, 300);
-                }
-                if (e.target.closest('#about-btn-menu')) openModal(aboutModal, aboutModal.querySelector('#about-modal-content'));
-                if (e.target.closest('.theme-btn')) applyTheme(e.target.closest('.theme-btn').dataset.theme);
-            });
-
-            chatLog.addEventListener('click', (e) => {
-                const link = e.target.closest('a[data-is-resource="true"]');
-                if (link) {
-                    e.preventDefault();
-                    window.openResourceModal(link.dataset.resourceTitle, link.href);
-                }
-            });
-            sendButton.addEventListener('click', () => handleUserSubmit());
-            chatTextarea.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleUserSubmit();
-                }
-            });
-            chatTextarea.addEventListener('input', () => {
-                sendButton.disabled = chatTextarea.value.trim().length === 0;
-                chatTextarea.style.height = 'auto';
-                chatTextarea.style.height = `${chatTextarea.scrollHeight}px`;
-            });
-
-            // --- Animation Logic ---
-            let scene, camera, renderer, stars, starGeo;
-            const starVelocities = [];
-
-            function initAnimation() {
-                const canvas = document.getElementById('bg-animation-canvas');
-                if (!canvas) return;
-                scene = new THREE.Scene();
-                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-                camera.position.z = 1;
-                renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                starGeo = new THREE.BufferGeometry();
-                const starCount = 10000;
-                const positions = new Float32Array(starCount * 3);
-                const colors = new Float32Array(starCount * 3);
-                const sizes = new Float32Array(starCount);
-                const colorPalette = [new THREE.Color(0xffffff), new THREE.Color(0xffd2a1), new THREE.Color(0xa1cfff)];
-                for (let i = 0; i < starCount; i++) {
-                    const i3 = i * 3;
-                    positions[i3] = (Math.random() - 0.5) * 800;
-                    positions[i3 + 1] = (Math.random() - 0.5) * 800;
-                    positions[i3 + 2] = (Math.random() - 0.5) * 800;
-                    starVelocities.push((Math.random() * 0.12) + 0.03);
-                    sizes[i] = Math.random() * 1.8 + 0.7;
-                    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                    colors[i3] = color.r;
-                    colors[i3 + 1] = color.g;
-                    colors[i3 + 2] = color.b;
-                }
-                starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                starGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-                const starTexture = new THREE.Texture(generateStarTexture());
-                starTexture.needsUpdate = true;
-                let starMaterial = new THREE.PointsMaterial({
-                    map: starTexture,
-                    vertexColors: true,
-                    sizeAttenuation: true,
-                    transparent: true,
-                    blending: THREE.AdditiveBlending,
-                    depthWrite: false
-                });
-                stars = new THREE.Points(starGeo, starMaterial);
-                scene.add(stars);
-                window.addEventListener('resize', onWindowResize, false);
-                animate();
-            }
-
-            function generateStarTexture() {
-                const canvas = document.createElement('canvas');
-                canvas.width = 32;
-                canvas.height = 32;
-                const context = canvas.getContext('2d');
-                const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
-                gradient.addColorStop(0, 'rgba(255,255,255,1)');
-                gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-                gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
-                gradient.addColorStop(1, 'rgba(255,255,255,0)');
-                context.fillStyle = gradient;
-                context.fillRect(0, 0, 32, 32);
-                return canvas;
-            }
-
-            function onWindowResize() {
-                if (!camera || !renderer) return;
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-
-            function animate() {
-                if (!stars) return;
-                const positions = starGeo.attributes.position.array;
-                for (let i = 0; i < positions.length / 3; i++) {
-                    const i3 = i * 3;
-                    positions[i3 + 2] += starVelocities[i];
-                    if (positions[i3 + 2] > 200) {
-                        positions[i3 + 2] = -200;
-                    }
-                }
-                starGeo.attributes.position.needsUpdate = true;
-                renderer.render(scene, camera);
-                requestAnimationFrame(animate);
-            }
-
-            // --- Initial page load ---
-            applyPinState();
-            applyTheme(localStorage.getItem('careerWizTheme') || 'starlight');
-            loadUserProfile();
-            renderDashboard();
-            loadChats();
-            renderChatHistory();
-            if (activeChatId) {
-                setActiveChat(activeChatId);
-                const activeTab = Array.from(chatHistoryList.children).find(c => c.dataset.chatId === activeChatId);
-                if (activeTab) setActiveSidebarItem(activeTab);
-                else if (chatHistoryList.firstChild) setActiveSidebarItem(chatHistoryList.firstChild);
-            }
-            initAnimation();
+    document.addEventListener('click', (e) => {
+        if (!settingsMenu.classList.contains('hidden') && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+            toggleSettingsMenu(settingsMenu);
+        }
+    });
+    
+    function generateChatId() { return `chat_${Date.now()}`; }
+    function saveChats() { localStorage.setItem('careerWizChats', JSON.stringify(chats)); localStorage.setItem('careerWizActiveChat', activeChatId); }
+    function loadChats() {
+        const savedChats = localStorage.getItem('careerWizChats');
+        const savedActiveChat = localStorage.getItem('careerWizActiveChat');
+        chats = (savedChats && JSON.parse(savedChats).length > 0) ? JSON.parse(savedChats) : [];
+        activeChatId = savedActiveChat;
+        if (!chats.find(c => c.id === activeChatId)) {
+            activeChatId = chats[0]?.id;
+        }
+        if (chats.length === 0) { createNewChat(false); }
+    }
+    function createNewChat(save = true) {
+        if (chats.length >= MAX_CHATS) return;
+        const newChatId = generateChatId();
+        let maxNum = chats.reduce((max, c) => { const match = c.name.match(/Career Chat (\d+)/); return (match && parseInt(match[1]) > max) ? parseInt(match[1]) : max; }, 0);
+        const newChat = { id: newChatId, name: `Career Chat ${maxNum + 1}`, history: [] };
+        chats.push(newChat);
+        setActiveChat(newChatId, save);
+    }
+    function setActiveChat(chatId, save = true) {
+        activeChatId = chatId;
+        renderChatHistory();
+        renderActiveChatMessages();
+        if (save) saveChats();
+    }
+    function renderChatHistory() {
+        chatHistoryList.innerHTML = '';
+        chats.forEach(chat => {
+            const isActive = chat.id === activeChatId;
+            const item = document.createElement('div');
+            item.className = `chat-history-item relative group flex items-center justify-between p-3 rounded-lg text-sm font-medium smooth-transition truncate cursor-pointer ${isActive ? 'bg-primary/20 text-accent font-semibold' : 'hover:bg-border-color/50 text-text-light'}`;
+            item.innerHTML = `<div class="flex-grow text-left truncate flex items-center space-x-3 pointer-events-none"><svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg><span class="sidebar-text">${chat.name}</span></div><div class="chat-actions absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 smooth-transition"><button class="delete-btn p-1 rounded hover:bg-red-500/20 text-red-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`;
+            item.addEventListener('click', () => setActiveChat(chat.id));
+            item.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); openDeleteModal(chat.id); });
+            chatHistoryList.appendChild(item);
         });
-    </script>
-</body>
+        newChatBtn.disabled = chats.length >= MAX_CHATS;
+    }
+    function renderActiveChatMessages() {
+        chatLog.innerHTML = '';
+        const activeChat = chats.find(c => c.id === activeChatId);
+        if (!activeChat) return;
+        if (activeChat.history.length === 0) { displayInitialAgentMessage(); } else { activeChat.history.forEach(message => { if (message.role === 'user') displayUserMessage(message.text); else displayAgentMessage(message.data); }); }
+        scrollToBottom();
+    }
+    function handleUserSubmit() { const query = chatTextarea.value.trim(); if (query) { triggerChat(query); chatTextarea.value = ''; sendButton.disabled = true; chatTextarea.style.height = 'auto'; } }
+    
+    async function triggerChat(query) {
+        const activeChat = chats.find(c => c.id === activeChatId);
+        if (!activeChat) return;
+        activeChat.history.push({ role: 'user', text: query });
+        saveChats();
+        displayUserMessage(query);
+        showLoadingIndicator();
+        chatTextarea.disabled = true;
+        sendButton.disabled = true;
+        try {
+            const username = localStorage.getItem('careerWizUserName');
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: query, username: username })
+            });
 
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            activeChat.history.push({ role: 'agent', data: data.reply });
+            saveChats();
+            removeLoadingIndicator();
+            displayAgentMessage(data.reply);
+        } catch (error) {
+            console.error('Chat API error:', error);
+            removeLoadingIndicator();
+            displayAgentMessage({ error: "Sorry, I'm having trouble connecting. Please check the backend server logs." });
+        } finally {
+            chatTextarea.disabled = false;
+            sendButton.disabled = chatTextarea.value.trim().length === 0;
+            chatTextarea.focus();
+        }
+    }
+    
+    function transitionToChat() {
+        landingPage.classList.add('opacity-0');
+        setTimeout(() => { landingPage.classList.add('hidden'); chatApp.classList.remove('hidden'); setTimeout(() => chatApp.classList.remove('opacity-0'), 50); }, 300);
+    }
+    function applyTheme(theme) { document.documentElement.className = theme; localStorage.setItem('careerWizTheme', theme); }
+    function openModal(modal, content) { modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10); }
+    function closeModal(modal, content) { modal.classList.add('opacity-0'); content.classList.add('scale-95'); setTimeout(() => modal.classList.add('hidden'), 300); }
+    function openDeleteModal(chatId) { chatToDeleteId = chatId; openModal(deleteModal, deleteModal.querySelector('div')); }
+    
+    function parseAgentResponse(text) { 
+        const placeholder = '___RESOURCE_LINK___';
+        let formattedText = text;
+        const links = [];
+        const resourceRegex = /\[RESOURCE:([^~]+)~([^\]]+)\]/g;
+        formattedText = formattedText.replace(resourceRegex, (match, title, url) => {
+            links.push({ title, url });
+            return placeholder;
+        });
+        const html = marked.parse(formattedText);
+        let linkIndex = 0;
+        const finalHtml = html.replace(new RegExp(placeholder, 'g'), () => {
+            const link = links[linkIndex++];
+            return `<a href="${link.url}" target="_blank" data-is-resource="true" data-resource-title="${link.title}" class="text-accent underline font-medium hover:opacity-80">${link.title}</a>`;
+        });
+        return finalHtml;
+    }
+
+    function getTextForClipboard(parsedHtml) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = parsedHtml;
+        return tempDiv.textContent || tempDiv.innerText || "";
+    }
+
+    function displayAgentMessage(reply) { 
+        if (reply && reply.error) {
+            const errorHtml = `<div class="flex items-start space-x-3">
+                <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-red-500 font-bold text-lg">!</span>
+                </div>
+                <div class="relative bg-bg-light rounded-2xl p-4 max-w-2xl w-full">
+                    <h4 class="font-bold text-red-500 mb-2">An Error Occurred</h4>
+                    <p class="text-sm text-text-light font-mono bg-secondary p-2 rounded">${reply.error}</p>
+                </div>
+            </div>`;
+            appendMessage(errorHtml);
+            return;
+        }
+
+        const rawText = reply.summary || reply.text || reply.full_response || 'An error occurred.';
+        const parsedHtml = parseAgentResponse(rawText);
+
+        const contentHtml = `<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="relative bg-bg-light rounded-2xl p-4 max-w-2xl w-full"><button class="copy-btn absolute top-2 right-2 p-1.5 rounded-full bg-border-color/50 hover:bg-border-color smooth-transition text-text-light" title="Copy text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><div class="agent-message-content">${parsedHtml}</div></div></div>`; 
+        appendMessage(contentHtml); 
+
+        const copyBtn = chatLog.lastChild.querySelector('.copy-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = getTextForClipboard(parsedHtml);
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.style.position = 'absolute';
+                tempTextarea.style.left = '-9999px';
+                tempTextarea.value = textToCopy.trim();
+                document.body.appendChild(tempTextarea);
+                tempTextarea.select();
+                try {
+                    document.execCommand('copy');
+                    copyBtn.innerHTML = '<svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                }
+                document.body.removeChild(tempTextarea);
+            });
+        }
+    }
+    
+    function displayInitialAgentMessage() {
+        const userName = localStorage.getItem('careerWizUserName');
+        const welcomeText = userName ? `Welcome to CareerWiz, ${userName}!` : 'Welcome to CareerWiz!';
+        const html = `<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="bg-bg-light rounded-2xl p-5 max-w-2xl text-text-light"><h3 class="font-bold text-lg text-text-main mb-2">${welcomeText}</h3><p class="mb-4 text-base">I can provide the best career guidance if you tell me a little about yourself.</p><p class="text-base font-medium text-text-main mb-2">For the best results, please share your:</p><ul class="list-disc list-inside space-y-1 text-base"><li>Educational background</li><li>Professional interests and hobbies</li><li>Your future goals</li></ul></div></div>`;
+        appendMessage(html);
+    }
+    function displayUserMessage(message) { const html = `<div class="bg-primary rounded-2xl p-4 max-w-2xl text-white text-base">${message.replace(/\n/g, '<br>')}</div>`; appendMessage(html, 'user'); }
+    function showLoadingIndicator() { const html = `<div id="loading" class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="bg-bg-light rounded-2xl p-4 flex items-center space-x-2 text-text-light text-base">Thinking...</div></div>`; appendMessage(html, 'agent', 'loading'); }
+    function removeLoadingIndicator() { const loadingElement = document.getElementById('loading'); if (loadingElement) loadingElement.remove(); }
+    function appendMessage(html, role = 'agent', id = null) { const bubbleWrapper = document.createElement('div'); bubbleWrapper.className = `w-full flex message-bubble ${role === 'user' ? 'justify-end' : 'justify-start'}`; if (id) bubbleWrapper.id = id; bubbleWrapper.innerHTML = html; chatLog.appendChild(bubbleWrapper); scrollToBottom(); }
+    function scrollToBottom() { chatWindow.scrollTop = chatWindow.scrollHeight; }
+    
+    // Global function to open the resource modal
+    window.openResourceModal = function(title, url) { 
+        modalCourseTitle.textContent = title; 
+        modalCourseUrl.textContent = url; 
+        modalProceedBtn.href = url; 
+        openModal(courseModal, courseModal.querySelector('div')); 
+    };
+    
+    // --- Event Listeners ---
+    newChatBtn.addEventListener('click', () => createNewChat());
+    
+    function startChattingProcess() {
+        if (!localStorage.getItem('careerWizUserName')) {
+            openModal(nameModal, nameModal.querySelector('div'));
+        } else {
+            transitionToChat();
+        }
+    }
+
+    startChatBtn.addEventListener('click', startChattingProcess);
+
+    learnMoreBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetSection = document.getElementById('how-the-magic-works-section');
+        targetSection.scrollIntoView({ behavior: 'smooth' });
+    });
+    
+    startChattingBtn.addEventListener('click', () => {
+        const userName = nameInput.value.trim();
+        if (userName) {
+            localStorage.setItem('careerWizUserName', userName);
+            closeModal(nameModal, nameModal.querySelector('div'));
+            transitionToChat();
+            renderActiveChatMessages();
+        }
+    });
+
+    aboutBtnLanding.addEventListener('click', () => openModal(aboutModal, aboutModal.querySelector('div')));
+
+    // Universal handlers for buttons inside the settings menu
+    document.querySelectorAll('#home-btn-menu').forEach(btn => {
+        btn.addEventListener('click', () => {
+            chatApp.classList.add('opacity-0');
+            setTimeout(() => {
+                chatApp.classList.add('hidden');
+                landingPage.classList.remove('hidden');
+                setTimeout(() => landingPage.classList.remove('opacity-0'), 50);
+            }, 300);
+        });
+    });
+
+    document.querySelectorAll('#about-btn-menu').forEach(btn => {
+        btn.addEventListener('click', () => openModal(aboutModal, aboutModal.querySelector('div')));
+    });
+
+    document.querySelectorAll('.theme-btn').forEach(button => {
+        button.addEventListener('click', () => applyTheme(button.dataset.theme));
+    });
+
+    deleteCancelBtn.addEventListener('click', () => closeModal(deleteModal, deleteModal.querySelector('div')));
+    deleteConfirmBtn.addEventListener('click', () => {
+        if (chatToDeleteId) {
+            chats = chats.filter(c => c.id !== chatToDeleteId);
+            if (activeChatId === chatToDeleteId) {
+                activeChatId = chats.length > 0 ? chats[chats.length - 1].id : null;
+            }
+            if (chats.length === 0) createNewChat();
+            else setActiveChat(activeChatId);
+        }
+        closeModal(deleteModal, deleteModal.querySelector('div'));
+    });
+    modalCancelBtn.addEventListener('click', () => closeModal(courseModal, courseModal.querySelector('div')));
+    modalProceedBtn.addEventListener('click', () => setTimeout(() => closeModal(courseModal, courseModal.querySelector('div')), 200));
+    aboutCloseBtn.addEventListener('click', () => closeModal(aboutModal, aboutModal.querySelector('div')));
+    
+    // Correct and centralized click handler for resource links
+    chatLog.addEventListener('click', (e) => {
+        const link = e.target.closest('a[data-is-resource="true"]');
+        if (link) {
+            e.preventDefault();
+            const title = link.dataset.resourceTitle;
+            const url = link.href;
+            window.openResourceModal(title, url); 
+        }
+    });
+
+    sendButton.addEventListener('click', handleUserSubmit);
+
+    chatTextarea.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            handleUserSubmit();
+        }
+    });
+    chatTextarea.addEventListener('input', () => {
+        sendButton.disabled = chatTextarea.value.trim().length === 0;
+        chatTextarea.style.height = 'auto';
+        chatTextarea.style.height = `${chatTextarea.scrollHeight}px`;
+    });
+    
+    // --- Animation Logic ---
+    let scene, camera, renderer, stars;
+    let starGeo;
+    const starVelocities = [];
+
+    function initAnimation() {
+        const canvas = document.getElementById('bg-animation-canvas');
+        if (!canvas) return;
+
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.z = 1;
+        
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            alpha: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        starGeo = new THREE.BufferGeometry();
+        const starCount = 10000;
+        const positions = new Float32Array(starCount * 3);
+        const colors = new Float32Array(starCount * 3);
+        const sizes = new Float32Array(starCount);
+        
+        const colorPalette = [
+            new THREE.Color(0xffffff),
+            new THREE.Color(0xffd2a1),
+            new THREE.Color(0xa1cfff)
+        ];
+
+        for (let i = 0; i < starCount; i++) {
+            const i3 = i * 3;
+            positions[i3] = (Math.random() - 0.5) * 800;
+            positions[i3 + 1] = (Math.random() - 0.5) * 800;
+            positions[i3 + 2] = (Math.random() - 0.5) * 800;
+            starVelocities.push((Math.random() * 0.05) + 0.01);
+            sizes[i] = Math.random() * 1.5 + 0.5;
+            
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            colors[i3] = color.r;
+            colors[i3 + 1] = color.g;
+            colors[i3 + 2] = color.b;
+        }
+
+        starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        starGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        
+        const starTexture = new THREE.Texture(generateStarTexture());
+        starTexture.needsUpdate = true;
+
+        let starMaterial = new THREE.PointsMaterial({
+            map: starTexture,
+            vertexColors: true,
+            sizeAttenuation: true,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        stars = new THREE.Points(starGeo, starMaterial);
+        scene.add(stars);
+
+        window.addEventListener('resize', onWindowResize, false);
+        animate();
+    }
+
+    function generateStarTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const context = canvas.getContext('2d');
+        const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradient.addColorStop(0, 'rgba(255,255,255,1)');
+        gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+        gradient.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 32, 32);
+        return canvas;
+    }
+
+    function onWindowResize() {
+        if (!camera || !renderer) return;
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+        if (!stars) return;
+        const positions = starGeo.attributes.position.array;
+        for(let i=0; i < positions.length / 3; i++){
+            const i3 = i * 3;
+            positions[i3 + 2] += starVelocities[i];
+            if(positions[i3 + 2] > 200) {
+                 positions[i3 + 2] = -200;
+            }
+        }
+        starGeo.attributes.position.needsUpdate = true;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+    }
+    
+    // --- Initial page load ---
+    applyPinState();
+    applyTheme(localStorage.getItem('careerWizTheme') || 'starlight');
+    loadChats();
+    renderChatHistory();
+    renderActiveChatMessages();
+    initAnimation();
+
+});
+</script>
+</body>
 </html>
