@@ -157,8 +157,7 @@ For practical tutorials, check out **[🎥 Python Tutorial for Beginners - Progr
 **For Skill Development Queries:**
 "Based on current market demand, here are three learning paths that align with your background... [specific recommendations with timelines and resources including actual links]"
 
-**For Career Change Questions:**  
-"Your experience in [previous role] actually translates well to [target field]. Here's how to position yourself... [tactical advice with real examples and relevant job board links]"
+**For Career Change Questions:** "Your experience in [previous role] actually translates well to [target field]. Here's how to position yourself... [tactical advice with real examples and relevant job board links]"
 
 **For Salary Inquiries:**
 "Let me pull the latest compensation data for your role and location... [current market rates with context and negotiation insights, including links to salary research tools]"
@@ -232,9 +231,9 @@ class CareerCounselorAgent:
             
             genai.configure(api_key=api_key)
             
-            # Initialize with the most capable free model
+            # Initialize with a supported, stable model
             self.model = genai.GenerativeModel(
-                model_name='gemini-1.5-flash',  # Most reliable free model
+                model_name='gemini-2.5-flash-lite', # Updated to a supported free model
                 system_instruction=SYSTEM_PROMPT,
                 tools=[search_tool.search_for_gemini]
             )
