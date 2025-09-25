@@ -641,7 +641,7 @@
         </div>
     </div>
 
- <script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- Agent System Prompt ---
         const SYSTEM_PROMPT = `You are CareerWiz, an expert AI career counselor. Your goal is to provide personalized, actionable career guidance. 
@@ -781,8 +781,8 @@
             } else {
                 userProfile.tasks.forEach(task => {
                     const button = document.createElement('button');
-                    button.className = 'w-full text-left p-3 rounded-lg bg-secondary hover:bg-border-color smooth-transition';
-                    button.textContent = task.title;
+                    button.className = 'w-full flex items-center p-3 rounded-lg bg-secondary hover:bg-border-color smooth-transition';
+                    button.innerHTML = `<svg class="w-5 h-5 flex-shrink-0 text-accent mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg><span class="font-medium text-text-main text-left flex-grow">${task.title}</span>`;
                     button.onclick = () => {
                         taskModalTitle.textContent = task.title;
                         taskModalBody.innerHTML = marked.parse(task.description);
@@ -1091,17 +1091,7 @@
         }
         
         function parseAgentResponse(text) {
-            // --- NEW CODE ADDED HERE ---
-            // This function now expects to receive the text from the `full_response` field
-            const resourceRegex = /\[(?:\s*🎥\s*)?([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-            const html = text.replace(resourceRegex, (match, title, url) => {
-                // The frontend no longer needs to manage the userProfile.resources array here.
-                // It just needs to format the links for display.
-                const icon = match.includes('🎥') ? '🎥' : '';
-                return `<a href="${url}" target="_blank" data-is-resource="true" data-resource-title="${title}" class="text-accent underline font-medium hover:opacity-80">${icon}${title}</a>`;
-            });
-            return marked.parse(html);
-            // --- END NEW CODE ---
+            return marked.parse(text);
         }
 
         function getTextForClipboard(html) {
@@ -1443,7 +1433,8 @@
         renderChatHistory();
         if (activeChatId) {
             setActiveChat(activeChatId);
-            const activeTab = Array.from(chatHistoryList.children).find(c => c.dataset.chatId === activeChatId);
+            const activeTab = Array.from(chatHistoryList.children).find(child => 
+                            child.classList.contains('bg-primary/20'));
             if (activeTab) setActiveSidebarItem(activeTab);
             else if (chatHistoryList.firstChild) setActiveSidebarItem(chatHistoryList.firstChild);
         }
