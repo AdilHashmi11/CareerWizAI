@@ -220,50 +220,6 @@ def validate_links_in_response(text: str) -> str:
     logger.info(f"✅ Response contains {valid_links_count} valid links")
     return text
 
-def parse_agent_json(text: str) -> dict:
-    """
-    Parses agent output to extract JSON content if present.
-    If no JSON is found, it formats the entire text as a full_response.
-    """
-    json_pattern = r'```json(.*?)```'
-    json_match = re.search(json_pattern, text, re.DOTALL)
-    
-    if json_match:
-        try:
-            json_content = json_match.group(1).strip()
-            data = json.loads(json_content)
-            
-            # The system prompt asks for a 'reply' object
-            if 'reply' in data:
-                reply_data = data['reply']
-                
-                # Ensure text is present, fallback to summary or an empty string
-                full_response_text = reply_data.get('text', '')
-                
-                # Extract tasks and resources
-                tasks = reply_data.get('tasks', [])
-                resources = reply_data.get('resources', [])
-                
-                return {
-                    "full_response": full_response_text,
-                    "tasks": tasks,
-                    "resources": resources,
-                    "source": "AI Plan"
-                }
-            else:
-                logger.warning("Agent JSON is missing 'reply' key")
-        except json.JSONDecodeError:
-            logger.error("Failed to parse JSON from agent response.")
-            
-    # Fallback if no valid JSON or structured data is found
-    logger.info("No valid structured JSON found. Returning raw text.")
-    return {
-        "full_response": text,
-        "tasks": [],
-        "resources": [],
-        "source": "AI Text"
-    }
-
 class CareerCounselorAgent:
     def __init__(self):
         """Initialize the CareerWiz agent with enhanced error handling."""
@@ -277,7 +233,7 @@ class CareerCounselorAgent:
             
             # Initialize with a supported, stable model
             self.model = genai.GenerativeModel(
-                model_name=os.getenv("GEMINI_MODEL", 'gemini-2.5-flash-lite'), # Using env variable
+                model_name='gemini-2.5-flash-lite', # Updated to a supported free model
                 system_instruction=SYSTEM_PROMPT,
                 tools=[search_tool.search_for_gemini]
             )
@@ -407,18 +363,14 @@ class CareerCounselorAgent:
                 try:
                     response = self.chat.send_message(career_angle_query)
                     if response and response.text:
-                        # Use the new parser to get structured data
-                        parsed_response = parse_agent_json(response.text.strip())
-                        cleaned_response = clean_response_text(parsed_response["full_response"])
+                        cleaned_response = clean_response_text(response.text.strip())
                         enhanced_response = self.enhance_response_with_links(cleaned_response)
                         final_response = validate_links_in_response(enhanced_response)
                         
                         return {
                             "full_response": final_response,
                             "source": "Career Strategy",
-                            "search_performed": self.check_if_search_performed(response),
-                            "tasks": parsed_response.get("tasks", []),
-                            "resources": parsed_response.get("resources", [])
+                            "search_performed": self.check_if_search_performed(response)
                         }
                 except:
                     # Fall back to conversational response
@@ -426,9 +378,7 @@ class CareerCounselorAgent:
                     return {
                         "full_response": conversational_response,
                         "source": "Conversational AI", 
-                        "search_performed": False,
-                        "tasks": [],
-                        "resources": []
+                        "search_performed": False
                     }
             
             # Prepare the query with conversational context and search instruction
@@ -442,20 +392,27 @@ class CareerCounselorAgent:
             # Send query to the model with conversation history
             response = self.chat.send_message(contextual_query)
 
-            # Check if the response is a tool call before trying to access `.text`
-            if not response.parts or not hasattr(response.parts[0], 'text'):
-                logger.warning("Empty response from conversational model or response is a function call")
-                # Handle the case where the response might be a tool call with no text
-                # The library should handle this automatically. If it doesn't, we return a fallback.
+            # Check for a text part in the response before trying to access .text
+            # The model may respond with a function call first, which does not have a .text attribute.
+            if not response.candidates or not response.candidates[0].content.parts:
+                logger.warning("Empty response from conversational model")
                 return {
-                    "error": "I couldn't generate a response right now. It seems I need to perform an action first. Please try again or rephrase your question about a specific career topic."
+                    "error": "I couldn't generate a response right now. Could you rephrase your question or try asking about a specific career topic?"
+                }
+
+            text_parts = [part.text for part in response.candidates[0].content.parts if hasattr(part, 'text')]
+            if not text_parts:
+                logger.warning("Response does not contain a text part, likely a function call.")
+                # This indicates the model is waiting for the function call to execute.
+                # In a real-world app, the function call would be executed here, and a new
+                # response would be generated with the tool output.
+                return {
+                    "error": "I'm processing a tool request. Please try again in a moment or rephrase."
                 }
             
             # Clean and validate the response
-            raw_text = response.text.strip()
-            parsed_response = parse_agent_json(raw_text)
-
-            cleaned_response = clean_response_text(parsed_response["full_response"])
+            raw_text = "".join(text_parts).strip()
+            cleaned_response = clean_response_text(raw_text)
             enhanced_response = self.enhance_response_with_links(cleaned_response)
             final_response = validate_links_in_response(enhanced_response)
             
@@ -468,9 +425,7 @@ class CareerCounselorAgent:
             return {
                 "full_response": final_response,
                 "source": source,
-                "search_performed": search_performed,
-                "tasks": parsed_response.get("tasks", []),
-                "resources": parsed_response.get("resources", [])
+                "search_performed": search_performed
             }
             
         except exceptions.ResourceExhausted:
