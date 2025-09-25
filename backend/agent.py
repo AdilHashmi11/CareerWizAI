@@ -391,11 +391,14 @@ class CareerCounselorAgent:
             
             # Send query to the model with conversation history
             response = self.chat.send_message(contextual_query)
-            
-            if not response or not response.text:
-                logger.warning("Empty response from conversational model")
+
+            # Check if the response is a tool call before trying to access `.text`
+            if not response.parts or not hasattr(response.parts[0], 'text'):
+                logger.warning("Empty response from conversational model or response is a function call")
+                # Handle the case where the response might be a tool call with no text
+                # The library should handle this automatically. If it doesn't, we return a fallback.
                 return {
-                    "error": "I couldn't generate a response right now. Could you rephrase your question or try asking about a specific career topic?"
+                    "error": "I couldn't generate a response right now. It seems I need to perform an action first. Please try again or rephrase your question about a specific career topic."
                 }
             
             # Clean and validate the response
