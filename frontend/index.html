@@ -643,18 +643,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- Agent System Prompt ---
-        const SYSTEM_PROMPT = `You are CareerWiz, an expert AI career counselor. Your goal is to provide personalized, actionable career guidance. 
-        1.  **Assess User Profile**: Analyze the user's skills, interests, education, location, and career goals from their profile.
-        2.  **Identify Gaps**: Compare their profile to their stated career goals and identify any gaps in skills, education, or experience.
-        3.  **Analyze Market Trends**: Use your knowledge to provide insights into current job market trends, in-demand skills, and salary expectations relevant to the user's goal and location.
-        4.  **Develop a Plan**: Create a realistic, step-by-step development plan (e.g., a 30-day plan). This plan should be tailored to bridge the gaps you identified. Each step should have a clear title and a detailed description.
-        5.  **Recommend Resources**: Suggest specific, high-quality resources (articles, courses, universities) using the format [RESOURCE:Title~URL].
-        6.  **Response Structure**: When a user asks for a plan, your response must be a JSON object containing a "reply" object. This object must include:
-            - "text": A conversational response.
-            - "tasks": An array of objects, where each object represents a step in the plan and has "title" and "description" properties.
-        `;
-
         // --- Element Selections ---
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -1061,7 +1049,6 @@
                 const data = await response.json();
                 const replyData = data.reply || data;
 
-                // --- NEW CODE ADDED HERE ---
                 if (replyData && replyData.tasks) {
                     userProfile.tasks = replyData.tasks;
                 }
@@ -1069,13 +1056,12 @@
                     userProfile.resources = replyData.resources;
                 }
                 saveUserProfile();
-                // --- END NEW CODE ---
         
                 activeChat.history.push({ role: 'agent', data: replyData });
                 saveChats();
                 removeLoadingIndicator();
                 displayAgentMessage(replyData);
-                renderDashboard(); // Re-render dashboard after each chat response
+                renderDashboard();
         
             } catch (err) {
                 console.error('Chat API error:', err);
@@ -1091,7 +1077,9 @@
         }
         
         function parseAgentResponse(text) {
-            return marked.parse(text);
+             // Correctly handle links with double asterisks by removing them before parsing
+             const cleanedText = text.replace(/\*\*\[([^\]]+)\]\(([^)]+)\)\*\*/g, '[$1]($2)');
+             return marked.parse(cleanedText);
         }
 
         function getTextForClipboard(html) {
@@ -1105,11 +1093,9 @@
                 appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-red-500 font-bold text-lg">!</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><h4 class="font-bold text-red-500 mb-2">An Error Occurred</h4><p class="text-sm text-text-light font-mono bg-secondary p-2 rounded">${reply.error}</p></div></div>`);
                 return;
             }
-            // --- UPDATED CODE HERE ---
-            // The reply object now contains full_response, tasks, and resources
-            const rawText = reply.full_response || 'An error occurred.'; 
+            const rawText = reply.full_response || 'An error occurred.';
             const html = parseAgentResponse(rawText);
-            // --- END UPDATED CODE ---
+            
             appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><button class="copy-btn absolute top-2 right-2 p-1.5 rounded-full bg-border-color/50 hover:bg-border-color smooth-transition text-text-light" title="Copy text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><div class="agent-message-content">${html}</div></div></div>`);
             const copyBtn = chatLog.lastChild.querySelector('.copy-btn');
             if (copyBtn) copyBtn.addEventListener('click', () => {
@@ -1205,11 +1191,10 @@
                         if (!activeChatId) {
                             createNewChat();
                         }
-                        const activeChatTab = Array.from(chatHistoryList.children).find(child => 
+                        const activeTab = Array.from(chatHistoryList.children).find(child => 
                             child.classList.contains('bg-primary/20'));
-                        if (!activeChatTab && chatHistoryList.firstChild) {
-                            setActiveSidebarItem(chatHistoryList.firstChild);
-                        }
+                        if (activeTab) setActiveSidebarItem(activeTab);
+                        else if (chatHistoryList.firstChild) setActiveSidebarItem(chatHistoryList.firstChild);
                         chatTextarea.focus();
                     }, 50);
                 }, 300);
@@ -1439,9 +1424,8 @@
             else if (chatHistoryList.firstChild) setActiveSidebarItem(chatHistoryList.firstChild);
         }
         initAnimation();
-    });
-</script>
+        });
+   </script>
 </body>
-
 </html>
 
