@@ -289,14 +289,8 @@ class SearchTool:
                 seen_urls.add(url)
                 unique_results.append(result)
         
-        # Check if links are live before prioritizing
-        live_urls = await self.async_check_links([res['url'] for res in unique_results])
-        
-        # Filter results to include only live links
-        live_results = [res for res in unique_results if res['url'] in live_urls]
-
         # Prioritize career-relevant results
-        final_results = self.prioritize_career_results(live_results)
+        final_results = self.prioritize_career_results(unique_results)
         
         # Format results for the agent
         if final_results:
