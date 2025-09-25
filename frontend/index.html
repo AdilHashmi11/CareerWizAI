@@ -591,7 +591,7 @@
             <div class="text-sm text-text-light space-y-4">
                 <p><strong>What is CareerWiz?</strong><br>CareerWiz is an intelligent AI career counselor designed to provide personalized, structured, and actionable guidance for your professional journey. It helps you explore career paths, understand requirements, and create a roadmap to success.</p>
                 <p><strong>How does it work?</strong><br>Powered by Google's advanced Gemini AI model, CareerWiz can understand your questions, use its search tool to find real-time information, and synthesize the findings into a clear, easy-to-understand plan. Your conversations are saved privately in your browser's local storage.</p>
-                <p><strong>Is the information current?</strong><br>Yes, our AI analyzes data in real-time to provide the most relevant guidance. Information is current as of September 25, 2025.</p>
+                <p><strong>Is the information current?</strong><br>Yes, our AI analyzes data in real-time to provide the most relevant guidance. Information is current as of September 26, 2025.</p>
                 <p><strong>How can it help me?</strong><br>Whether you're a student exploring options, a professional looking to switch careers, or just curious about a field, CareerWiz can help. Ask for a "deep dive" into a career, inquire about jobs in your city, or explore learning resources.</p>
             </div>
         </div>
@@ -870,10 +870,14 @@
             }
 
             const applyPinState = () => {
-                if (isSidebarPinned) {
-                    sidebar.classList.add('is-expanded');
+                 if (window.innerWidth >= 768) {
+                    if (isSidebarPinned) {
+                        sidebar.classList.add('is-expanded');
+                    } else {
+                        sidebar.classList.remove('is-expanded');
+                    }
                 } else {
-                    sidebar.classList.remove('is-expanded');
+                     sidebar.classList.remove('is-expanded');
                 }
                 localStorage.setItem('sidebarPinned', isSidebarPinned);
             };
@@ -1041,33 +1045,25 @@
                 }
             
                 try {
+                    const username = userProfile.name || localStorage.getItem('careerWizUserName');
                     const response = await fetch('/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            message: query,
-                            user_profile: userProfile,
-                            system_prompt: SYSTEM_PROMPT
+                        body: JSON.stringify({ 
+                            message: query, 
+                            username: username 
                         })
                     });
             
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             
                     const data = await response.json();
+                    const replyData = data.reply || data;
             
-                    const replyObject = data.reply || data;
-            
-                    if (replyObject && replyObject.tasks) {
-                        userProfile.tasks = replyObject.tasks;
-                        saveUserProfile();
-                        renderDashboard();
-                        showNotification('Tasks and Guides have been updated!');
-                    }
-            
-                    activeChat.history.push({ role: 'agent', data: replyObject });
+                    activeChat.history.push({ role: 'agent', data: replyData });
                     saveChats();
                     removeLoadingIndicator();
-                    displayAgentMessage(replyObject);
+                    displayAgentMessage(replyData);
             
                 } catch (err) {
                     console.error('Chat API error:', err);
@@ -1105,8 +1101,8 @@
                     appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-red-500 font-bold text-lg">!</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><h4 class="font-bold text-red-500 mb-2">An Error Occurred</h4><p class="text-sm text-text-light font-mono bg-secondary p-2 rounded">${reply.error}</p></div></div>`);
                     return;
                 }
-                const text = reply.text || 'An error occurred.';
-                const html = parseAgentResponse(text);
+                const rawText = reply.summary || reply.text || reply.full_response || 'An error occurred.';
+                const html = parseAgentResponse(rawText);
                 appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><button class="copy-btn absolute top-2 right-2 p-1.5 rounded-full bg-border-color/50 hover:bg-border-color smooth-transition text-text-light" title="Copy text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><div class="agent-message-content">${html}</div></div></div>`);
                 const copyBtn = chatLog.lastChild.querySelector('.copy-btn');
                 if (copyBtn) copyBtn.addEventListener('click', () => {
@@ -1347,7 +1343,7 @@
                 renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 starGeo = new THREE.BufferGeometry();
-                const starCount = 100000;
+                const starCount = 10000;
                 const positions = new Float32Array(starCount * 3);
                 const colors = new Float32Array(starCount * 3);
                 const sizes = new Float32Array(starCount);
@@ -1403,6 +1399,7 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
+                applyPinState(); // Re-apply pin state on resize
             }
 
             function animate() {
@@ -1439,3 +1436,4 @@
 </body>
 
 </html>
+
