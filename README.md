@@ -6,7 +6,7 @@ Feeling lost in your career path? 🧭 Meet **CareerWiz** 🧙, your personal AI
 
 ## ✨ Key Features
 
-* **Intelligent Agentic Core:** At its heart, CareerWiz uses the Gemini 1.5 Flash model with a custom tool to perform intelligent, real-time web searches and provide actionable, tool-augmented responses.
+* **Intelligent Agentic Core:** At its heart, CareerWiz uses the Gemini 2.5 Flash-Lite model with a custom tool to perform intelligent, real-time web searches and provide actionable, tool-augmented responses.
 * **Real-Time Insights:** Integrates with the Serper API to fetch up-to-date information on market trends, salary data, and in-demand skills, ensuring the advice you get is always current.
 * **Structured & Conversational Responses:** Whether you need a detailed roadmap or a quick answer, the agent provides a clear, emoji-rich, and conversational output that avoids rigid, error-prone formats like XML.
 * **Interactive Frontend:** A sleek, modern user interface built with HTML, Tailwind CSS, and vanilla JavaScript that offers a seamless and engaging chat experience.
