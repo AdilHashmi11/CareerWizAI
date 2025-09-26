@@ -525,30 +525,29 @@
                     <h3 class="text-xl font-semibold mb-4 text-text-main">User Information</h3>
                     <div id="user-info-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-text-light">
                         <div><strong class="text-text-light/80">Name:</strong> <span class="user-info-field" data-key="name">Not Set</span></div>
+                        <div><strong class="text-text-light/80">Email:</strong> <span class="user-info-field" data-key="email">Not Set</span></div>
+                        <div><strong class="text-text-light/80">Country:</strong> <span class="user-info-field" data-key="country">Not Set</span></div>
                         <div><strong class="text-text-light/80">Goal:</strong> <span class="user-info-field" data-key="goal">Not Set</span></div>
-                        <div><strong class="text-text-light/80">Education:</strong> <span class="user-info-field" data-key="education">Not Set</span></div>
-                        <div><strong class="text-text-light/80">Location:</strong> <span class="user-info-field" data-key="location">Not Set</span></div>
+                        <div class="col-span-1 md:col-span-2"><strong class="text-text-light/80">Education:</strong> <span class="user-info-field" data-key="education">Not Set</span></div>
                         <div class="col-span-1 md:col-span-2"><strong class="text-text-light/80">Skills:</strong> <span class="user-info-field" data-key="skills">Not Set</span></div>
                     </div>
                 </div>
                 
                 <div class="glass rounded-2xl p-6 border border-border-color">
-                    <h3 class="text-xl font-semibold mb-4 text-text-main">Agent Recommended Resources</h3>
-                    <div id="agent-resources-list" class="space-y-3 text-accent">
-                         <p class="text-text-light/70">Agent-provided resources like articles, courses, and links will appear here.</p>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl p-6 border border-border-color">
-                    <h3 class="text-xl font-semibold mb-4 text-text-main">Task and Guides</h3>
-                    <div id="task-guides-list" class="space-y-4">
-                        <p class="text-text-light/70">Agent-provided tasks and guides will appear here.</p>
+                    <h3 class="text-xl font-semibold mb-4 text-text-main">All Generated Resources</h3>
+                    <div id="guidance-container">
+                        <p id="no-guidance-message" class="text-text-light/70">AI-generated roadmaps and links will be summarized here.</p>
+                        <button id="view-all-guidance-btn" class="hidden w-full flex items-center p-3 rounded-lg bg-secondary hover:bg-border-color smooth-transition">
+                            <svg class="w-5 h-5 flex-shrink-0 text-accent mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                            <span class="font-medium text-text-main text-left flex-grow">View Resources by Chat</span>
+                        </button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Modals -->
     <div id="rename-modal" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
         <div id="rename-modal-content" class="glass rounded-2xl w-full max-w-sm p-8 border border-border-color transform scale-95 smooth-transition">
             <h3 class="text-xl font-bold text-text-main mb-2">Rename Chat</h3>
@@ -563,21 +562,27 @@
     <div id="name-modal" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
         <div id="name-modal-content" class="glass rounded-2xl w-full max-w-sm p-8 border border-border-color transform scale-95 smooth-transition">
             <h3 class="text-xl font-bold text-text-main mb-2">Welcome to CareerWiz!</h3>
-            <p class="text-sm text-text-light mb-6">To get started, please tell us your name.</p><input type="text" id="name-input" class="w-full p-3 border border-border-color rounded-lg bg-bg-main text-text-main focus:ring-2 focus:ring-primary" placeholder="Enter your name...">
+            <p class="text-sm text-text-light mb-6">To get started, please tell us your name, email, and country.</p>
+            <input type="text" id="name-input" class="w-full p-3 mb-4 border border-border-color rounded-lg bg-bg-main text-text-main focus:ring-2 focus:ring-primary" placeholder="Enter your name...">
+            <input type="email" id="email-input" class="w-full p-3 mb-4 border border-border-color rounded-lg bg-bg-main text-text-main focus:ring-2 focus:ring-primary" placeholder="Enter your email...">
+            <select id="country-select" class="w-full p-3 border border-border-color rounded-lg bg-bg-main text-text-main focus:ring-2 focus:ring-primary">
+                <option value="">Select your country...</option>
+            </select>
             <div class="flex justify-end mt-6"><button id="start-chatting-btn" class="px-6 py-2.5 bg-primary hover:bg-accent text-white font-semibold rounded-lg smooth-transition">Start Chatting</button></div>
         </div>
     </div>
-    <div id="task-modal" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
-        <div id="task-modal-content" class="glass rounded-2xl w-full max-w-lg p-8 border border-border-color transform scale-95 smooth-transition">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="task-modal-title" class="text-xl font-bold text-text-main">Task Details</h3>
-                <button id="task-close-btn" class="p-1 rounded-full hover:bg-border-color">
+    <div id="guidance-modal" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
+        <div id="guidance-modal-content" class="glass rounded-2xl w-full max-w-3xl p-6 md:p-8 border border-border-color transform scale-95 smooth-transition flex flex-col" style="max-height: 80vh;">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                <h3 class="text-xl font-bold text-text-main">Generated Resources by Chat</h3>
+                <button id="guidance-close-btn" class="p-1 rounded-full hover:bg-border-color">
                     <svg class="w-5 h-5 text-text-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <div id="task-modal-body" class="text-sm text-text-light space-y-4"></div>
+            <div id="guidance-modal-tabs" class="flex-shrink-0 border-b border-border-color mb-4 overflow-x-auto"></div>
+            <div id="guidance-modal-body" class="flex-grow overflow-y-auto chat-scrollbar pr-2"></div>
         </div>
     </div>
     <div id="about-modal" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden smooth-transition opacity-0">
@@ -590,7 +595,7 @@
             <div class="text-sm text-text-light space-y-4">
                 <p><strong>What is CareerWiz?</strong><br>CareerWiz is an intelligent AI career counselor designed to provide personalized, structured, and actionable guidance for your professional journey. It helps you explore career paths, understand requirements, and create a roadmap to success.</p>
                 <p><strong>How does it work?</strong><br>Powered by Google's advanced Gemini AI model, CareerWiz can understand your questions, use its search tool to find real-time information, and synthesize the findings into a clear, easy-to-understand plan. Your conversations are saved privately in your browser's local storage.</p>
-                <p><strong>Is the information current?</strong><br>Yes, our AI analyzes data in real-time to provide the most relevant guidance. Information is current as of September 26, 2025.</p>
+                <p><strong>Is the information current?</strong><br>Yes, our AI analyzes data in real-time to provide the most relevant guidance.</p>
                 <p><strong>How can it help me?</strong><br>Whether you're a student exploring options, a professional looking to switch careers, or just curious about a field, CareerWiz can help. Ask for a "deep dive" into a career, inquire about jobs in your city, or explore learning resources.</p>
             </div>
         </div>
@@ -661,13 +666,13 @@
         const privacyModal = document.getElementById('privacy-modal');
         const disclaimerModal = document.getElementById('disclaimer-modal');
         const renameModal = document.getElementById('rename-modal');
-        const taskModal = document.getElementById('task-modal');
+        const guidanceModal = document.getElementById('guidance-modal');
         const deleteCancelBtn = document.getElementById('delete-cancel-btn');
         const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
         const modalProceedBtn = document.getElementById('modal-proceed-btn');
         const aboutCloseBtn = document.getElementById('about-close-btn');
-        const taskCloseBtn = document.getElementById('task-close-btn');
+        const guidanceCloseBtn = document.getElementById('guidance-close-btn');
         const startChattingBtn = document.getElementById('start-chatting-btn');
         const sidebarPinBtn = document.getElementById('sidebar-pin-btn');
         const settingsBtn = document.getElementById('settings-btn');
@@ -678,6 +683,8 @@
         const privacyCloseBtn = document.getElementById('privacy-close-btn');
         const disclaimerCloseBtn = document.getElementById('disclaimer-close-btn');
         const nameInput = document.getElementById('name-input');
+        const emailInput = document.getElementById('email-input');
+        const countrySelect = document.getElementById('country-select');
         const renameInput = document.getElementById('rename-input');
         const renameCancelBtn = document.getElementById('rename-cancel-btn');
         const renameSaveBtn = document.getElementById('rename-save-btn');
@@ -685,8 +692,6 @@
         const modalCourseUrl = document.getElementById('modal-course-url');
         const settingsMenu = document.getElementById('settings-menu');
         const notification = document.getElementById('notification');
-        const taskModalTitle = document.getElementById('task-modal-title');
-        const taskModalBody = document.getElementById('task-modal-body');
 
         // --- Dashboard/Chat View Elements ---
         const dashboardTab = document.getElementById('dashboard-tab');
@@ -695,8 +700,6 @@
         const headerTitle = document.getElementById('header-title');
         const editDashboardBtn = document.getElementById('edit-dashboard-btn');
         const userInfoFields = document.querySelectorAll('.user-info-field');
-        const agentResourcesList = document.getElementById('agent-resources-list');
-        const taskGuidesList = document.getElementById('task-guides-list');
         const statusIndicator = document.querySelector('.status-indicator');
 
         // --- State Variables ---
@@ -712,72 +715,34 @@
 
         const settingsMenuContent = `<button id="home-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span class="sidebar-text">Home</span></button><button id="about-btn-menu" class="w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="sidebar-text">About</span></button><div class="h-px bg-border-color my-1"></div><p class="px-2 py-1 text-xs font-semibold text-text-light sidebar-text">THEMES</p><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="starlight">✨ Starlight</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="goldenrod">🍂 Goldenrod</button><button class="theme-btn w-full text-left p-2 rounded hover:bg-border-color/50 text-text-main text-sm sidebar-text" data-theme="cyberpunk">👾 Cyberpunk</button>`;
         settingsMenu.innerHTML = settingsMenuContent;
+        
+        // --- Country List Population ---
+        const countries = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo, Democratic Republic of the","Congo, Republic of the","Costa Rica","Cote d'Ivoire","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kosovo","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar (Burma)","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Palestine State","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"];
+        countries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country;
+            option.textContent = country;
+            countrySelect.appendChild(option);
+        });
 
         // --- Dashboard Logic ---
         function loadUserProfile() {
             const savedProfile = localStorage.getItem('careerWizUserProfile');
             userProfile = savedProfile ? JSON.parse(savedProfile) : {
                 name: 'Not Set',
+                email: 'Not Set',
+                country: 'Not Set',
                 goal: 'Not Set',
                 education: 'Not Set',
-                location: 'Not Set',
                 skills: 'Not Set',
-                tasks: [],
-                resources: []
             };
-            if (!userProfile.resources) userProfile.resources = [];
-            if (!userProfile.tasks) userProfile.tasks = [];
         }
 
         function saveUserProfile() {
             localStorage.setItem('careerWizUserProfile', JSON.stringify(userProfile));
         }
-
-        function renderDashboard() {
-            userInfoFields.forEach(field => {
-                const key = field.dataset.key;
-                if (userProfile[key]) {
-                    field.textContent = userProfile[key];
-                }
-            });
-            renderAgentResources();
-            renderTasksAndGuides();
-        }
-
-        function renderAgentResources() {
-            agentResourcesList.innerHTML = '';
-            if (userProfile.resources.length === 0) {
-                agentResourcesList.innerHTML = `<p class="text-text-light/70">Agent-provided resources like articles, courses, and links will appear here.</p>`;
-            } else {
-                const list = document.createElement('ul');
-                list.className = 'space-y-3 list-disc list-inside';
-                userProfile.resources.forEach(res => {
-                    const item = document.createElement('li');
-                    item.innerHTML = `<a href="${res.url}" target="_blank" rel="noopener noreferrer" class="hover:underline text-text-light">${res.title}</a>`;
-                    list.appendChild(item);
-                });
-                agentResourcesList.appendChild(list);
-            }
-        }
-
-        function renderTasksAndGuides() {
-            taskGuidesList.innerHTML = '';
-            if (userProfile.tasks.length === 0) {
-                taskGuidesList.innerHTML = `<p class="text-text-light/70">Agent-provided tasks and guides will appear here.</p>`;
-            } else {
-                userProfile.tasks.forEach(task => {
-                    const button = document.createElement('button');
-                    button.className = 'w-full flex items-center p-3 rounded-lg bg-secondary hover:bg-border-color smooth-transition';
-                    button.innerHTML = `<svg class="w-5 h-5 flex-shrink-0 text-accent mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg><span class="font-medium text-text-main text-left flex-grow">${task.title}</span>`;
-                    button.onclick = () => {
-                        taskModalTitle.textContent = task.title;
-                        taskModalBody.innerHTML = marked.parse(task.description);
-                        openModal(taskModal, taskModal.querySelector('#task-modal-content'));
-                    };
-                    taskGuidesList.appendChild(button);
-                });
-            }
-        }
+        
+        // --- General UI Logic ---
         
         editDashboardBtn.addEventListener('click', () => {
             isEditingProfile = !isEditingProfile;
@@ -797,7 +762,97 @@
             }
         });
 
-        // --- General UI Logic ---
+        function renderDashboard() {
+            userInfoFields.forEach(field => {
+                const key = field.dataset.key;
+                if (userProfile[key]) {
+                    field.textContent = userProfile[key];
+                }
+            });
+            renderGuidanceButton();
+        }
+
+        function renderGuidanceButton() {
+            const viewAllGuidanceBtn = document.getElementById('view-all-guidance-btn');
+            const noGuidanceMessage = document.getElementById('no-guidance-message');
+            const hasGuidance = chats.some(chat => chat.guidance && chat.guidance.length > 0);
+
+            if (hasGuidance) {
+                noGuidanceMessage.classList.add('hidden');
+                viewAllGuidanceBtn.classList.remove('hidden');
+            } else {
+                noGuidanceMessage.classList.add('hidden');
+                viewAllGuidanceBtn.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('view-all-guidance-btn').addEventListener('click', () => {
+            const tabsContainer = document.getElementById('guidance-modal-tabs');
+            const bodyContainer = document.getElementById('guidance-modal-body');
+            tabsContainer.innerHTML = '';
+            bodyContainer.innerHTML = '';
+
+            const chatsWithGuidance = chats.filter(chat => chat.guidance && chat.guidance.length > 0);
+
+            chatsWithGuidance.forEach((chat, index) => {
+                const tabButton = document.createElement('button');
+                tabButton.className = 'px-4 py-2 text-sm font-semibold border-b-2 smooth-transition';
+                tabButton.textContent = chat.name;
+                tabButton.dataset.tabId = chat.id;
+
+                const tabContent = document.createElement('div');
+                tabContent.className = 'hidden';
+                tabContent.id = chat.id;
+                
+                let chatGuidanceHTML = chat.guidance.map(item => {
+                    const guidanceHTML = `
+                        <div class="mb-4">
+                            <h4 class="text-md font-bold text-text-main mb-2">Guidance & Roadmap</h4>
+                            <div class="text-sm text-text-light agent-message-content">${marked.parse(item.full_response)}</div>
+                        </div>`;
+                    
+                    let resourcesHTML = '';
+                    if (item.resources && item.resources.length > 0) {
+                        resourcesHTML = `
+                            <div class="mt-4">
+                                <h4 class="text-md font-bold text-text-main mb-2">Links & Resources</h4>
+                                <ul class="list-disc list-inside space-y-1">
+                                    ${item.resources.map(res => `<li><a href="${res.url}" target="_blank" rel="noopener noreferrer" class="hover:underline text-accent">${res.title}</a></li>`).join('')}
+                                </ul>
+                            </div>`;
+                    }
+                    
+                    return `<div class="mb-6 pb-4 border-b border-border-color/50">${guidanceHTML}${resourcesHTML}</div>`;
+                }).join('');
+
+                tabContent.innerHTML = chatGuidanceHTML;
+                tabsContainer.appendChild(tabButton);
+                bodyContainer.appendChild(tabContent);
+
+                if (index === 0) {
+                    tabButton.classList.add('border-primary', 'text-text-main');
+                    tabContent.classList.remove('hidden');
+                } else {
+                    tabButton.classList.add('border-transparent', 'text-text-light', 'hover:text-text-main');
+                }
+            });
+
+            tabsContainer.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', () => {
+                    tabsContainer.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('border-primary', 'text-text-main');
+                        btn.classList.add('border-transparent', 'text-text-light', 'hover:text-text-main');
+                    });
+                    bodyContainer.querySelectorAll('div[id]').forEach(content => content.classList.add('hidden'));
+
+                    button.classList.add('border-primary', 'text-text-main');
+                    document.getElementById(button.dataset.tabId).classList.remove('hidden');
+                });
+            });
+
+            openModal(guidanceModal, guidanceModal.querySelector('#guidance-modal-content'));
+        });
+
         function switchView(view) {
             if (view === 'dashboard') {
                 dashboardPane.classList.remove('hidden');
@@ -805,7 +860,7 @@
                 headerTitle.textContent = 'Dashboard';
                 editDashboardBtn.classList.remove('hidden');
                 if(statusIndicator) statusIndicator.classList.add('hidden');
-                renderDashboard(); // Re-render dashboard on switch
+                renderDashboard();
             } else {
                 dashboardPane.classList.add('hidden');
                 chatArea.classList.remove('hidden');
@@ -924,6 +979,9 @@
         function loadChats() {
             const saved = localStorage.getItem('careerWizChats');
             chats = (saved && JSON.parse(saved).length > 0) ? JSON.parse(saved) : [];
+            chats.forEach(chat => {
+                if (!chat.guidance) chat.guidance = [];
+            });
             activeChatId = localStorage.getItem('careerWizActiveChat');
             if (!chats.find(c => c.id === activeChatId)) activeChatId = chats.length > 0 ? chats[0].id : null;
             if (chats.length === 0) createNewChat(false);
@@ -942,8 +1000,9 @@
             const newChat = {
                  id: newId,
                  name: `📝 Career ${maxNum + 1}`,
-                  history: []
-                        };
+                 history: [],
+                 guidance: []
+            };
             chats.push(newChat);
             setActiveChat(newId, save);
         }
@@ -1021,7 +1080,6 @@
             if (!activeChat) return;
         
             activeChat.history.push({ role: 'user', text: query });
-            saveChats();
             displayUserMessage(query);
             showLoadingIndicator();
             chatTextarea.disabled = true;
@@ -1032,14 +1090,11 @@
             }
         
             try {
-                const username = userProfile.name || localStorage.getItem('careerWizUserName');
+                const username = userProfile.name || 'Anonymous';
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: query, 
-                        username: username 
-                    })
+                    body: JSON.stringify({ message: query, username: username })
                 });
         
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -1047,16 +1102,20 @@
                 const data = await response.json();
                 const replyData = data.reply || data;
 
-                if (replyData && replyData.tasks) {
-                    userProfile.tasks = replyData.tasks;
-                }
-                if (replyData && replyData.resources) {
-                    userProfile.resources = replyData.resources;
-                }
-                saveUserProfile();
-        
                 activeChat.history.push({ role: 'agent', data: replyData });
+
+                // Create and save a unified guidance object
+                if (replyData.full_response) {
+                    if (!activeChat.guidance) activeChat.guidance = [];
+                    activeChat.guidance.push({
+                        query: query,
+                        full_response: replyData.full_response,
+                        resources: replyData.resources || []
+                    });
+                }
+                
                 saveChats();
+
                 removeLoadingIndicator();
                 displayAgentMessage(replyData);
                 renderDashboard();
@@ -1075,9 +1134,7 @@
         }
         
         function parseAgentResponse(text) {
-             // Correctly handle links with double asterisks by removing them before parsing
-             const cleanedText = text.replace(/\*\*\[([^\]]+)\]\(([^)]+)\)\*\*/g, '[$1]($2)');
-             return marked.parse(cleanedText);
+            return marked.parse(text || "");
         }
 
         function getTextForClipboard(html) {
@@ -1087,11 +1144,20 @@
         }
 
         function displayAgentMessage(reply) {
-            if (reply && reply.error) {
+            let rawText;
+            if (typeof reply === 'string') {
+                rawText = reply;
+            } else if (reply && reply.error) {
                 appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-red-500 font-bold text-lg">!</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><h4 class="font-bold text-red-500 mb-2">An Error Occurred</h4><p class="text-sm text-text-light font-mono bg-secondary p-2 rounded">${reply.error}</p></div></div>`);
                 return;
+            } else if (reply && reply.full_response) {
+                rawText = reply.full_response;
+            } else if (reply && reply.text) {
+                rawText = reply.text;
+            } else {
+                rawText = 'An error occurred.';
             }
-            const rawText = reply.full_response || 'An error occurred.';
+
             const html = parseAgentResponse(rawText);
             
             appendMessage(`<div class="flex items-start space-x-3"><div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center flex-shrink-0"><span class="text-text-main font-bold text-sm">AI</span></div><div class="relative glass rounded-2xl p-4 max-w-2xl w-full"><button class="copy-btn absolute top-2 right-2 p-1.5 rounded-full bg-border-color/50 hover:bg-border-color smooth-transition text-text-light" title="Copy text"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button><div class="agent-message-content">${html}</div></div></div>`);
@@ -1175,7 +1241,7 @@
         
         startChatBtn.addEventListener('click', () => {
             loadUserProfile(); 
-            if (!userProfile.name || userProfile.name === 'Not Set') {
+            if (!userProfile.name || userProfile.name === 'Not Set' || !userProfile.email || userProfile.email === 'Not Set' || !userProfile.country || userProfile.country === 'Not Set') {
                 openModal(nameModal, nameModal.querySelector('#name-modal-content'));
                 nameInput.focus();
             } else {
@@ -1205,20 +1271,49 @@
         });
 
         nameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                startChattingBtn.click();
+                emailInput.focus();
+            }
+        });
+        emailInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                countrySelect.focus();
             }
         });
         
-        nameInput.addEventListener('input', () => {
-            nameInput.classList.remove('ring-2', 'ring-red-500');
-        });
+        nameInput.addEventListener('input', () => nameInput.classList.remove('ring-2', 'ring-red-500'));
+        emailInput.addEventListener('input', () => emailInput.classList.remove('ring-2', 'ring-red-500'));
+        countrySelect.addEventListener('change', () => countrySelect.classList.remove('ring-2', 'ring-red-500'));
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
 
         startChattingBtn.addEventListener('click', () => {
             const name = nameInput.value.trim();
-            if (name) {
+            const email = emailInput.value.trim();
+            const country = countrySelect.value;
+            let isValid = true;
+
+            if (!name) {
+                nameInput.classList.add('ring-2', 'ring-red-500');
+                isValid = false;
+            }
+            if (!email || !isValidEmail(email)) {
+                emailInput.classList.add('ring-2', 'ring-red-500');
+                isValid = false;
+            }
+            if (!country) {
+                countrySelect.classList.add('ring-2', 'ring-red-500');
+                isValid = false;
+            }
+
+            if (isValid) {
                 userProfile.name = name;
+                userProfile.email = email;
+                userProfile.country = country;
                 saveUserProfile();
                 renderDashboard();
                 closeModal(nameModal, nameModal.querySelector('#name-modal-content'));
@@ -1237,8 +1332,7 @@
                     }, 50);
                 }, 300);
             } else {
-                nameInput.classList.add('ring-2', 'ring-red-500');
-                setTimeout(() => nameInput.classList.remove('ring-2', 'ring-red-500'), 2000);
+                showNotification('Please fill in all fields correctly.', 'error');
             }
         });
 
@@ -1248,7 +1342,7 @@
         privacyCloseBtn.addEventListener('click', () => closeModal(privacyModal, privacyModal.querySelector('#privacy-modal-content')));
         disclaimerCloseBtn.addEventListener('click', () => closeModal(disclaimerModal, disclaimerModal.querySelector('#disclaimer-modal-content')));
         aboutCloseBtn.addEventListener('click', () => closeModal(aboutModal, aboutModal.querySelector('#about-modal-content')));
-        taskCloseBtn.addEventListener('click', () => closeModal(taskModal, taskModal.querySelector('#task-modal-content')));
+        guidanceCloseBtn.addEventListener('click', () => closeModal(guidanceModal, guidanceModal.querySelector('#guidance-modal-content')));
 
         deleteCancelBtn.addEventListener('click', () => closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content')));
         modalCancelBtn.addEventListener('click', () => closeModal(courseModal, courseModal.querySelector('#modal-content')));
@@ -1265,6 +1359,7 @@
                 }
                 saveChats();
                 renderChatHistory();
+                renderDashboard();
             }
             closeModal(deleteModal, deleteModal.querySelector('#delete-modal-content'));
         });
@@ -1333,18 +1428,18 @@
             renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             starGeo = new THREE.BufferGeometry();
-            const starCount = 10000;
+            const starCount = 1000000;
             const positions = new Float32Array(starCount * 3);
             const colors = new Float32Array(starCount * 3);
             const sizes = new Float32Array(starCount);
             const colorPalette = [new THREE.Color(0xffffff), new THREE.Color(0xffd2a1), new THREE.Color(0xa1cfff)];
             for (let i = 0; i < starCount; i++) {
                 const i3 = i * 3;
-                positions[i3] = (Math.random() - 0.5) * 800;
-                positions[i3 + 1] = (Math.random() - 0.5) * 800;
-                positions[i3 + 2] = (Math.random() - 0.5) * 800;
+                positions[i3] = (Math.random() - 0.5) * 2000;
+                positions[i3 + 1] = (Math.random() - 0.5) * 2000;
+                positions[i3 + 2] = (Math.random() - 0.5) * 2000;
                 starVelocities.push((Math.random() * 0.12) + 0.03);
-                sizes[i] = Math.random() * 1.8 + 0.7;
+                sizes[i] = Math.random() * 1.5 + 0.5;
                 const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
                 colors[i3] = color.r;
                 colors[i3 + 1] = color.g;
@@ -1389,7 +1484,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            applyPinState(); // Re-apply pin state on resize
+            applyPinState();
         }
 
         function animate() {
@@ -1398,8 +1493,8 @@
             for (let i = 0; i < positions.length / 3; i++) {
                 const i3 = i * 3;
                 positions[i3 + 2] += starVelocities[i];
-                if (positions[i3 + 2] > 200) {
-                    positions[i3 + 2] = -200;
+                if (positions[i3 + 2] > 1000) {
+                    positions[i3 + 2] = -1000;
                 }
             }
             starGeo.attributes.position.needsUpdate = true;
@@ -1426,3 +1521,4 @@
 </script>
 </body>
 </html>
+
